@@ -87,7 +87,10 @@ Uses GPU if available, else CPU (the model is ~0.75M params — CPU is fine).
   (`data_rule.py` · `model_rule.py` · `ablation_rule.py`): **capability gap**
   (persist 5%→81%, reset stays at chance), **amortization** (`both` compute 7.95→1.21
   steps across the stream), **surprise = memory-miss** (`corr = −0.96`). See `RESULTS.md`.
-- [ ] Add π^k reasoning depth; scale to main-claim tasks (MQAR / in-context regression).
+- [~] **Joint stress-test** — partial-obs reachability (`data_reachp.py` · `ablation_reachp.py`):
+  directional (persist 22%→41%; depth rises with K but saturates; corr −0.23). Base-learner
+  limited, not a mechanism failure. See `RESULTS.md` Part 3.
+- [ ] Sharpen joint: K-curriculum + auxiliary next-node loss + easier config / more capacity.
 
 ## Files
 

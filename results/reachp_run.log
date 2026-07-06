@@ -1,0 +1,34 @@
+device=cpu | params=0.22M | n=24 m=5 Q=12 T=10 kcap=8
+== train (memory persists across the stream) ==
+  step     1 | loss 3.3364
+  step   300 | loss 2.8515
+  step   600 | loss 2.7022
+  step   900 | loss 2.6244
+  step  1200 | loss 2.5356
+  step  1500 | loss 2.4625
+  step  1800 | loss 2.4750
+  step  2100 | loss 2.4454
+  step  2400 | loss 2.3651
+  step  2700 | loss 2.3474
+  step  3000 | loss 2.2926
+  step  3300 | loss 2.3415
+  step  3600 | loss 2.3039
+  step  3900 | loss 2.2745
+== eval (per-config tau) ==
+  fixed   | acc  21.0% | steps 10.00 | acc/q 22 20 20 22 19 20 22 23 21 18 23 23
+  +halt   | acc  16.0% | steps 3.23 | acc/q 17 16 14 17 14 15 17 17 16 16 17 16
+  persist | acc  35.3% | steps 10.00 | acc/q 22 28 31 37 34 37 39 41 38 37 38 41
+  both    | acc  25.7% | steps 5.38 | acc/q 20 24 24 26 23 26 28 29 28 26 28 27
+== depth vs difficulty K (both; answerable & correct) ==
+  K=0: halt-step 1.92  (n=784)
+  K=1: halt-step 2.06  (n=509)
+  K=2: halt-step 8.46  (n=70)
+  K=3: halt-step 9.80  (n=35)
+  K=4: halt-step 9.85  (n=33)
+  K=5: halt-step 10.00  (n=31)
+  K=6: halt-step 10.00  (n=17)
+  K=7: halt-step 10.00  (n=12)
+  K=8: halt-step 10.00  (n=20)
+== surprise vs miss: corr(answerable, surprise) = -0.229 ==
+== amortization (both): acc q0=20% -> q11=27% ==
+saved figure -> reachp_curve.png
