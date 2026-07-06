@@ -3,10 +3,14 @@
 Checks:
   (1) the latent recurrent reasoner learns to follow f to the sink,
   (2) accuracy improves with test-time depth (per-K peaks at needed depth),
-  (3) a convergence signal (step-to-step KL / entropy) tracks difficulty K
-      -> steps-to-converge correlates with K  [the halting signal we'll use].
+  (3) a convergence signal tracks difficulty K -> steps-to-converge correlates
+      with K. NOTE: as implemented, "convergence" = first step after which the
+      argmax prediction never changes, computed in hindsight over the full
+      rollout — a fixed-point/convergence signal, not the surprise scalar, and
+      not an online halting rule. It validates the task's difficulty structure;
+      online halting rules are compared in the bake-off (see PROJECT.md §7).
 
-Usage: python train_eval.py --steps 3000
+Usage: python -m awe.experiments.depth_sanity --steps 3000
 """
 import argparse
 import random
