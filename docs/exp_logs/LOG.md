@@ -10,7 +10,8 @@
 | 2026-07-06 | `ablation_amort` | full-table reachability에 query 스트림+persist 메모리 | 🔴 **negative** — 전부 100%·amortization 평평(그래프가 context에 있어 메모리 잉여) | `results/` |
 | 2026-07-06 | `ablation_rule` | **hidden permutation + 부분관측** 스트림 (메모리 손잡이) | ✅ **first positive** — capability gap 5%→81%, amortization 8→1.2스텝, `corr(miss)=−0.96`, both=persist 정확도를 2.4 vs 8스텝 | `results/rule_curve.png`, `results/hidden_rule_run.log` |
 | 2026-07-06 | `ablation_reachp` | **부분관측 reachability** — 깊이+메모리 결합 stress-test | 🟡 **directional** — persist 22%→41%, depth가 K 따라 늘지만 K≥2 예산 포화, `corr(miss)=−0.23`(base-learner 병목) | `results/reachp_curve.png`, `results/reachp_run.log` |
-| 2026-07-06 | `ablation_reachp2` | 개선판: K-curriculum + aux next-node loss + d=256 | ⏳ **running** — GPU1 완전히 빌 때 자동 실행 대기 중 | (예정) `results/reachp2_curve.png` |
+| 2026-07-06 | `ablation_reachp2` | 개선판: K-curriculum + aux next-node loss + d=256 (GPU0) | 🟡→ **부분 성공** — curriculum+aux가 base-learner 병목 해소: persist 35→**72%**, amortization 40→**79%**. 단 depth∝K는 여전히 조잡(K≥1 증가하나 예산 포화, K=0 이상치), halting이 정확도 깎음(both 44<persist 72), `corr(miss)=−0.33`. **진단: halting을 entropy→수렴(convergence)으로 바꿔야 깊이 깨끗해짐** | `results/reachp2_curve.png`, `results/reachp2_run.log` |
+| (다음) | `ablation_reachp3`(예정) | reachp2 + **convergence halting**(entropy 대체) | ⏳ 미착수 — Increment-1의 corr 0.92 halting을 joint에 이식 | — |
 
 ## 메모
 - **핵심 전환점**: `ablation_amort`(negative) → 진단(그래프가 context에 있어 메모리 잉여, shortcut 없음) → `ablation_rule`(부분관측으로 메모리 필수화) = 첫 positive.
