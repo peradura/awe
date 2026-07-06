@@ -39,6 +39,8 @@ bakeoff×2} + 자동 집계).
 ```bash
 export CUDA_DEVICE_ORDER=PCI_BUS_ID        # CUDA 인덱스 = nvidia-smi 인덱스
 export CUDA_VISIBLE_DEVICES=<idx>          # 반드시 GPU 하나만 지정
+export OMP_NUM_THREADS=4                   # CPU 스레드 제한 (공유 서버 예절)
+# 실행 시 nice -n 10 을 앞에 붙여 CPU 우선순위도 양보
 PYTHONPATH=src python3 -m awe.experiments.ablation_reachp2 --steps 8000 --fig results/reachp2_curve.png |& tee results/reachp2_run.log
 SEEDS="0 1 2 3 4" bash scripts/sweep.sh    # 다중 시드 + bake-off + mean±std 집계
 python3 scripts/aggregate.py results       # 집계만 다시 보기
