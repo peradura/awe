@@ -3,7 +3,7 @@
   2. auxiliary next-node loss (read each revealed key -> predict its value):
      gives short credit assignment for the memory, the key fix for chain-following
   3. more capacity (d=256)
-Architecture unchanged (reuses model_rule.RuleReasoner) so any gain is not
+Architecture unchanged (reuses awe.models.memory.RuleReasoner) so any gain is not
 confounded by a new model.
 
 GPU NOTE: heavier (8k steps); ask before launching on a shared GPU.

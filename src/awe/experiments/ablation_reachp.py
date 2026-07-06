@@ -1,7 +1,7 @@
 """Partial-observation reachability: does surprise-driven depth adapt to
 difficulty K while memory accumulates the graph across the stream?
 
-Reuses model_rule.RuleReasoner (associative memory + iterated retrieval).
+Reuses awe.models.memory.RuleReasoner (associative memory + iterated retrieval).
 Per-hop supervision on the chain f^t(v0); memory persists across the stream.
 
 Checks:

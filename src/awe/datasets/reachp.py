@@ -8,11 +8,15 @@ Combines the two knobs cleanly:
     stream (the weight knob) -> capability gap + amortization.
 
 Each query reveals m edges (node -> f(node)); a probe start node v0 is answerable
-iff every node on its path v0->...->sink had its edge revealed in a PRIOR query.
+iff every node on its path v0->...->sink has had its edge revealed by the END of
+the current query's reveal. (The model writes the current query's edges into
+memory BEFORE retrieving, so current-query reveals are usable information —
+counting only strictly-prior reveals mislabeled those probes as ans=0 and
+attenuated corr(answerable, surprise); fixed 2026-07-06.)
 `ans` (answerable) is returned for the surprise-vs-miss check.
 
-Reuses model_rule.RuleReasoner (associative memory + iterated retrieval); only
-the data + training-supervision differ.
+Reuses awe.models.memory.RuleReasoner (associative memory + iterated retrieval);
+only the data + training-supervision differ.
 """
 import torch
 
@@ -59,7 +63,7 @@ def make_batch(batch_size, cfg, rng, device="cpu"):
       target (B,Q)       sink(v0)
       traj (B,Q,T)       f^1..f^T(v0), clamped at sink (per-hop supervision)
       K (B,Q)            distance to sink
-      ans (B,Q)          1 if full path was revealed in a PRIOR query
+      ans (B,Q)          1 if full path revealed by end of this query's reveal
     """
     n, m, Q, T = cfg.n, cfg.m, cfg.Q, cfg.T
     keys = torch.empty(batch_size, Q, m, dtype=torch.long)
@@ -85,8 +89,9 @@ def make_batch(batch_size, cfg, rng, device="cpu"):
             x = v0
             for t in range(T):
                 x = f[x]; traj[b, q, t] = x
-            ans[b, q] = 1 if all(node in revealed_prior for node in path) else 0
+            # the model writes this query's edges before retrieval, so they count
             revealed_prior |= set(ks)
+            ans[b, q] = 1 if all(node in revealed_prior for node in path) else 0
     return dict(
         keys=keys.to(device), vals=vals.to(device), probe=probe.to(device),
         target=target.to(device), traj=traj.to(device),

@@ -99,7 +99,7 @@ answer = decode(z, W)               # 마지막에만 단어로
 - Coconut — Training LLMs to Reason in a Continuous Latent Space. **arXiv:2412.06769** (Meta, 2024)
 - FR-Ponder — Learning to Ponder: Adaptive Reasoning in Latent Space. **arXiv:2509.24238** (2025)
 - Recurrent Depth — Scaling Test-Time Compute with Latent Reasoning. **arXiv:2502.05171** (Geiping 외, 2025)
-- PonderTTT — When to Ponder: Adaptive Compute via Test-Time Training. **arXiv:2601.00894** (Gihyeon Sim, 2025)
+- PonderTTT — When to Ponder: Adaptive Compute via Test-Time Training. **arXiv:2601.00894** (Gihyeon Sim, 2026-01)
 - Titans — Learning to Memorize at Test Time. **arXiv:2501.00663** (Google, 2024)
 - TTT layers — RNNs with Expressive Hidden States. **arXiv:2407.04620** (Sun 외, 2024)
 - Test-Time Training (원조). **arXiv:1909.13231** (Sun 외, ICML 2020)
@@ -107,3 +107,34 @@ answer = decode(z, W)               # 마지막에만 단어로
 
 ---
 *미확인 세부(원문 직접 재확인 필요): Coconut 커리큘럼 학습 스케줄, Titans surprise 수식·메모리 갱신 규칙. 3-pass는 [[research-methodology]] 적용.*
+
+---
+
+## 부록 — 2026-07-06 문헌 재검증 및 주장 정정
+
+이 제안서는 2026-07-03 시점의 스냅샷으로 보존한다. 이후 재검증에서 다음 정정이
+필요함이 확인됐다 (README/PROJECT/RESULTS에 반영됨):
+
+1. **§2 "D열은 완전히 비어 있다" → 좁혀야 함.**
+   - **UT-Memory (arXiv:2604.21999, 2026-04)** — ACT halting + 학습형 메모리를
+     한 블록에 넣고 깊이–메모리 대체(halt 11.6→8.3, 정확도 고정, Sudoku-Extreme)를
+     보임. 단, 메모리가 *학습 시점의 아키텍처 용량*(메모리 크기별 별도 학습)이고
+     halting이 *학습된 ACT 라우터*라서 본 제안의 test-time 축과는 다름 — 그러나
+     **C4("같은 예산선에서 두 손잡이 비교는 전무")는 문장 그대로는 이제 성립하지
+     않으므로 철회**하고, 차별화(test-time vs train-time, 신호 vs 라우터)로 대체.
+   - **HRM (2506.21734) · TRM (2510.04871)** — 소형 재귀 모델 + 학습된 Q-halting +
+     지속 상태로 합성 추론(Sudoku/Maze/ARC)에서 강한 결과. 같은 실험 틈새를 선점
+     하고 있으므로 관련 연구에 필수 인용.
+   - **살아남은 좁은 빈 칸**: *TTT/메모리 모듈의 자기지도 손실 자체가 halting
+     신호가 되는 구성*(별도 라우터·Q-head·RL 불필요, "공짜 신호"). 2026-07-06
+     검색 기준 선행 없음.
+2. **C3 "같은 신호의 양면" — 전제가 아니라 가설.** 이 동일성은 latent step이
+   메모리 손실에 대한 (근사) 경사 하강일 때만 성립한다. 반례 두 방향: 수렴했지만
+   surprise 높음(비가역 오차·noisy-TV — 영원히 halt 안 함), surprise 낮지만 계산
+   미완(예측 가능한 multi-hop 체인 — 조기 halt). 후자는 Part 3에서 실제로 관측됨
+   (halting on 시 −9.6pp). 개념 계보로 predictive coding / free energy(Rao &
+   Ballard 1999; Friston)를 인용할 것 — "하나의 예측 오차가 추론 정착과 시냅스
+   갱신을 모두 구동"은 이 전통의 아이디어이며, 소유하면 강점이고 숨기면 약점.
+3. **§6 대비 실제 실행 규모**: 1B 모델·GSM8K·H2 frontier는 미착수. 현재 증거는
+   0.2–0.9M 파라미터 합성 과제의 메커니즘 파일럿이며, 단일 시드·eval-batch tau
+   캘리브레이션 등 위생 항목이 bake-off 재실행에 걸려 있다 (PROJECT.md §7).
