@@ -14,7 +14,8 @@ from pathlib import Path
 from statistics import mean, stdev
 
 ABL = re.compile(r"^\s+(\S+)\s+\| acc\s+([\d.]+)% \| steps\s+([\d.]+)")
-BAK = re.compile(r"^\s+(ent|recon|rnorm|dstate|dent)\s+(-?[\d.]+)\s+([\d.]+)%\s+([\d.]+)\s+([\d.]+)%\s+([+-][\d.]+)")
+BAK = re.compile(r"^\s+(ent|recon|rnorm|dstate|dent)\s+(-?[\d.]+)\s+([\d.]+)%\s+([\d.]+)"
+                 r"\s+([\d.]+)%\s+([\d.]+)%\s+([+-](?:[\d.]+|nan))")
 COR = re.compile(r"corr[^=]*=\s*([+-]?\d+\.\d+)")
 
 
@@ -28,7 +29,7 @@ def main(root):
     acc = defaultdict(lambda: defaultdict(list))    # exp -> key -> values
     steps = defaultdict(lambda: defaultdict(list))
     corr = defaultdict(lambda: defaultdict(list))
-    for log in sorted(Path(root).glob("*_s*.log")):
+    for log in sorted(Path(root).glob("*_s[0-9]*.log")):
         exp = re.sub(r"_s\d+$", "", log.stem)
         for line in log.read_text().splitlines():
             m = ABL.match(line)
@@ -40,7 +41,8 @@ def main(root):
             if m:
                 acc[exp][m.group(1)].append(float(m.group(3)))
                 steps[exp][m.group(1)].append(float(m.group(4)))
-                corr[exp][m.group(1)].append(float(m.group(6)))
+                if "nan" not in m.group(7):
+                    corr[exp][m.group(1)].append(float(m.group(7)))
                 continue
             m = COR.search(line)
             if m:

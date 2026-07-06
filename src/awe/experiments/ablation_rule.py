@@ -96,6 +96,7 @@ def main():
     ap.add_argument("--lr", type=float, default=3e-4)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--fig", type=str, default="rule_curve.png")
+    ap.add_argument("--ckpt", type=str, default="", help="save trained weights here (for bakeoff reuse)")
     args = ap.parse_args()
 
     torch.manual_seed(args.seed)
@@ -109,6 +110,9 @@ def main():
 
     print("== train (memory persists across the stream) ==")
     train(model, cfg, opt, device, args.steps, args.batch, rng)
+    if args.ckpt:
+        torch.save(model.state_dict(), args.ckpt)
+        print(f"saved ckpt -> {args.ckpt}")
 
     data = make_batch(1000, cfg, rng, device)
     # held-out calibration batch: tau must not be tuned on the scored batch

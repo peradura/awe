@@ -50,6 +50,9 @@ while true; do
   sleep "$POLL_SEC"
 done
 
+# PCI_BUS_ID makes CUDA indices match nvidia-smi's — without it, CUDA's default
+# FASTEST_FIRST ordering can silently map our index onto a DIFFERENT, busy GPU.
+export CUDA_DEVICE_ORDER=PCI_BUS_ID
 export CUDA_VISIBLE_DEVICES="$GPU"
 echo "[gpu_watch] $(date '+%F %T') claiming GPU ${GPU}; running queue: ${QUEUE}"
 

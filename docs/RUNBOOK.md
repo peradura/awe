@@ -6,10 +6,17 @@
 ## 1. 준비 (최초 1회)
 
 ```bash
-git clone <repo-url> awe && cd awe
+git clone https://github.com/peradura/awe.git awe && cd awe
 git checkout claude/project-review-discussion-b0r8j3
-python3 -c "import torch; print(torch.__version__)"   # torch만 있으면 됨 (+ matplotlib)
+
+# 요즘 서버 파이썬은 PEP 668(externally-managed)이라 venv가 필요하다:
+python3 -m venv .venv && source .venv/bin/activate
+pip install torch matplotlib
+python3 -c "import torch; print(torch.__version__, torch.cuda.is_available())"
 ```
+
+이후 세션에서는 `cd awe && source .venv/bin/activate`만 하면 된다.
+tmux가 없으면 `nohup <명령> > 로그 2>&1 &`로 대체 (아래 예시 참조).
 
 ## 2. 예절 러너 — GPU가 빌 때까지 기다렸다가 자동 실행
 
@@ -30,11 +37,16 @@ bakeoff×2} + 자동 집계).
 ## 3. 개별 실행 (GPU를 이미 확보했다면)
 
 ```bash
+export CUDA_DEVICE_ORDER=PCI_BUS_ID        # CUDA 인덱스 = nvidia-smi 인덱스
 export CUDA_VISIBLE_DEVICES=<idx>          # 반드시 GPU 하나만 지정
 PYTHONPATH=src python3 -m awe.experiments.ablation_reachp2 --steps 8000 --fig results/reachp2_curve.png |& tee results/reachp2_run.log
 SEEDS="0 1 2 3 4" bash scripts/sweep.sh    # 다중 시드 + bake-off + mean±std 집계
 python3 scripts/aggregate.py results       # 집계만 다시 보기
 ```
+
+sweep은 ablation이 저장한 체크포인트(`results/ckpt_*.pt`)를 bake-off가 재사용해
+같은 모델을 두 번 학습하지 않으며, 한 단계가 죽어도 나머지 큐는 계속 돈다
+(실패는 `results/sweep_failures.log`에 기록).
 
 ## 4. 끝나면 반드시 커밋
 
@@ -49,10 +61,19 @@ git push -u origin claude/project-review-discussion-b0r8j3
 - **reachp2**: persist가 K≥2 answerable에서 ~70%+ 나오면 base-learner 병목 해소
   → bake-off 판정이 유효해짐. 여전히 낮으면 컨트롤러 논의 전에 학습부터.
 - **bake-off** (`bakeoff_{rule,reachp}_s*.log`): 각 신호(ent/recon/rnorm/dstate/dent)의
-  acc·steps·corr@0과 실패 분해(early_right/premature/wrong_anyway/budget).
-  - `recon`이 `ent`와 대등하면 → "TTT 손실 = 공짜 halting 신호" 논지 생존.
-  - `shufacc`(같은 스텝 분포, 신호 무작위)와 차이가 없으면 그 신호는 일 안 하는 것.
+  acc·steps·corr과 실패 분해(early_right/premature/wrong_anyway/full_depth, 합=1;
+  `pm|halt`=조기 halt 중 premature 비율).
+  - **판정은 단일 점이 아니라 `curve` 줄(신호별 tau-스윕 eval 곡선)에서** — 같은
+    avg-steps에서 acc를 비교해야 matched-compute 비교(kill criterion)가 된다.
+  - `recon`이 `ent`와 대등하면 → 논지에 유리. 단 `recon`은 문자 그대로의 TTT write
+    loss가 아니라 그 자기지도 **대체물**(read decodability — probe의 정답 v를 아는
+    write loss는 halting 신호가 될 수 없음). 판정 문구도 그렇게 써야 함.
+  - `shuf_b`(쿼리-위치별 스텝 분포 보존 널)와 차이가 없으면 그 신호는 per-example
+    정보를 안 쓰는 것. `shuf_g`만 이기는 건 위치 스케줄 효과일 수 있음.
   - `premature`가 큰 신호는 확신-오답 조기 종료 문제(Part 3의 −9.6pp 원인) 보유.
+  - `dent`는 구조상 t=0에 halt 불가(+1스텝 페널티) — steps 비교 시 감안.
+  - bake-off의 `ent`는 ablation의 `both`와 tau 선택 방식이 달라(median vs
+    slack-기반) 수치가 정확히 일치하지 않는 것이 정상.
 - **중단 기준**: PROJECT.md §7 kill criterion 참조.
 
 ## 주의
