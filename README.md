@@ -14,13 +14,17 @@ In the target design, `surprise` is the fast-weight memory's self-supervised
 reconstruction error, and the same scalar decides **when to Exit** (halting)
 and **how much Weight to adapt** (TTT) — hence *Adaptive Weight & Exit*.
 
-> **⚠️ Implementation status (honest accounting).** The shared-signal design is
-> implemented in `models/ttt.py` / `models/amort.py`, whose experiments were
-> inconclusive (task too easy) / negative. The **positive results below use two
-> related but distinct signals**: the delta-rule **reconstruction error gates the
-> write**, while **readout entropy drives halting** (`models/memory.py`).
-> "One scalar drives both knobs" is therefore still an open hypothesis, not a
-> demonstrated result. Closing that gap is the top item on the roadmap.
+> **⚠️ Status (2026-07-06, post 10-seed bake-off).** The *literal* "one
+> reconstruction-error scalar drives both knobs" claim is **tested and does not
+> hold for the halting knob**: the reconstruction scalar *loses* (−5.6pp, on par
+> with entropy; with the tested definition + held-out `tau`). A convergence signal
+> halts without accuracy cost — but `dstate` (≈‖∇_s L‖) does so *conservatively*
+> (barely halts early), and the compute-efficient halter is readout convergence
+> (`conv`), which has no write role. Honest reading: **depth and write want
+> different observables**; "one signal, two knobs" is at best a cautious, untested
+> interpretation. Next: does convergence-halting transfer to an external task
+> (MQAR)? See [`docs/RESULTS.md`](docs/RESULTS.md) §"Part 3-B", `PROJECT.md` §4/§7,
+> and [`docs/mqar_design.md`](docs/mqar_design.md).
 
 ---
 
@@ -33,7 +37,7 @@ Each half exists separately; nearby cells are fuller than our first sweep found:
 | adaptive latent **depth / halting** | FR-Ponder (RL), Geiping (KL-convergence), HRM/TRM (learned Q-halting) | via surprise (hypothesis) |
 | test-time **weight** adaptation | PonderTTT (binary gate), Titans (memory) | ✅ graded delta-rule |
 | **depth–memory trade-off** | UT-Memory (2604.21999): halt steps fall as memory grows — but *train-time capacity*, learned ACT router | test-time accumulation, signal-driven |
-| **TTT's own loss as the halting signal** (no learned router / Q-head / RL) | none found (as of 2026-07-06) | the remaining open cell — **not yet implemented in a positive experiment** |
+| **TTT-module dynamics as the halting signal** (no learned router / Q-head / RL) | none found (as of 2026-07-06) | open cell — bake-off: raw recon loss **loses**, but latent-step *convergence* (`dstate`≈‖∇_s L‖) **preserves accuracy** (conservatively) |
 
 A theoretical hook: Geiping's *convergence* halting ("stop when the latent
 stops moving") and Titans/PonderTTT's *surprise* update ("write more when
@@ -82,8 +86,13 @@ model, evaluated four ways:
 
 **Questions.** *H1*: does TTT let AWE halt earlier at matched accuracy?
 *H2*: is `both` the best accuracy-per-compute frontier?
-*(Status: this full-context task turned out too easy to separate the configs —
-see Status below. H1/H2 remain untested and move to the bake-off protocol.)*
+*(Status: this full-context task turned out too easy to separate the configs.
+H1/H2 were later tested on the partial-obs joint task via the bake-off: **H1** —
+partially: a convergence signal halts earlier at matched accuracy (`conv` ~4.6 vs
+6.0 steps, −0.0pp) **on 7/10 seeds** (bimodal — no saving on 3/10); **H2** — the
+accuracy/compute frontier depends on the halting
+signal (entropy/recon −5.6pp, conv/dstate −0.0pp). See `docs/RESULTS.md`
+§"Part 3-B".)*
 
 ## Quickstart
 
@@ -116,19 +125,21 @@ Experiment log → [`docs/exp_logs/LOG.md`](docs/exp_logs/LOG.md).**
   latent steps 7.95→1.21 across the stream; write cost unaffected by halting),
   **entropy tracks memory-miss** (`corr = −0.96`). Halting here = readout entropy,
   not the write signal. See `docs/RESULTS.md`.
-- [x] **Joint stress-test = negative for joint control** — partial-obs reachability
-  (`datasets/reachp.py` · `experiments/ablation_reachp.py`): memory-only amortization
-  holds (persist 22%→41%), **but turning halting ON costs accuracy**
-  (`both` 25.7% vs `persist` 35.3%, −9.6pp; `+halt` 16.0% vs `fixed` 21.0%) and
-  halt-steps jump toward the budget for K≥2 (pinned at 10 by K≥5). An `ans`-labeling artifact attenuating
-  `corr` was found and fixed 2026-07-06 (see `docs/RESULTS.md` Part 3).
-- [ ] **Top priority — make the headline true or retire it**: run Parts 2–3 with the
-  shared reconstruction-error signal actually driving *both* knobs (`ttt.py`-style),
-  in a halting-signal bake-off (recon-error vs entropy vs Δstate/step-KL vs
-  random-matched-steps vs fixed-depth-matched), held-out tau, ≥5 seeds.
-- [ ] Sharpen joint: K-curriculum + auxiliary next-node loss + easier config / more
-  capacity (`ablation_reachp2`), plus per-example failure decomposition
-  (early-wrong / early-right / never-confident).
+- [x] **Joint stress-test (entropy halt) = negative, later resolved** — partial-obs
+  reachability (`datasets/reachp.py` · `experiments/ablation_reachp.py`): memory
+  amortization holds, but *entropy* halting cost accuracy. An `ans`-labeling artifact
+  attenuating `corr` was found and fixed 2026-07-06. **Superseded by the bake-off**
+  (the cost was signal-specific).
+- [x] **Sharpen joint (`ablation_reachp2`, 10 seeds)** — K-curriculum + aux next-node
+  loss + d=256: persist **72.1±0.6%** (reset 43.3% → persist), isolating the halting
+  signal as the bottleneck; multi-seed amortization / depth∝K figures with error bars.
+- [x] **Halting-signal bake-off (`ablation_reachp3`, 10 seeds, held-out tau) ✅ verdict**
+  — entropy/recon lose −5.6pp (early-wrong 8–9%); `conv`/`dstate` cost-free (−0.0pp
+  vs persist 72.0±0.6%). The literal recon-scalar thesis **fails at halting**; the weak
+  convergence unification survives. Per-example failure decomposition included.
+- [ ] **Next — scale to an external task**: MQAR (Zoology 2312.04927 / Based 2402.18668
+  harness) to test whether convergence-halting transfers vs a delta-rule/TTT baseline.
+  See `PROJECT.md` §7.
 
 ## Layout
 
@@ -136,7 +147,7 @@ Experiment log → [`docs/exp_logs/LOG.md`](docs/exp_logs/LOG.md).**
 src/awe/
 ├── datasets/   reachability.py · amort.py · rule.py · reachp.py   (task generators)
 ├── models/     recurrent.py · ttt.py · amort.py · memory.py       (reasoners)
-└── experiments/ depth_sanity · ablation_{ttt,amort,rule,reachp,reachp2}
+└── experiments/ depth_sanity · ablation_{ttt,amort,rule,reachp,reachp2,reachp3}
 docs/   proposal.md · RESULTS.md · REVIEW.md · exp_logs/LOG.md
 results/  figures + run logs
 ```
@@ -144,11 +155,12 @@ See [`PROJECT.md`](PROJECT.md) for the full narrative and file roles.
 
 ## Known limitations (as of 2026-07-06)
 
-- **Single seed everywhere.** All headline numbers are one training run at
-  `--seed 0`, no error bars. Multi-seed reruns are queued with the bake-off.
-- **tau calibrated on the eval batch.** `calib_tau` uses the same procedurally
-  generated batch that is then scored. Fix is one line (fresh calibration batch);
-  numbers should be re-reported with held-out tau.
+- **Seeds differ by result.** The **bake-off (Part 3-B) and reachp2 amortization
+  are 10 seeds** with error bars; Parts 1–2 (depth sanity, hidden-rule) are still
+  single-seed (`--seed 0`) — multi-seed reruns pending.
+- **tau: held-out for the bake-off, eval-batch for the rest.** `ablation_reachp3`
+  calibrates `tau` on a held-out batch (leakage fixed); the older `calib_tau` path
+  (Parts 1–2 and the reachp2 configs) still calibrates on the scored batch.
 - **"3.3× less compute" counts latent retrieval steps only.** Delta-rule write
   cost is unaffected by halting; FLOPs accounting including writes is pending.
 - **`ablation_amort` used one tau across configs** (unfair to `+halt`, whose

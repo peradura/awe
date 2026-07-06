@@ -125,16 +125,23 @@ answer = decode(z, W)               # 마지막에만 단어로
    - **HRM (2506.21734) · TRM (2510.04871)** — 소형 재귀 모델 + 학습된 Q-halting +
      지속 상태로 합성 추론(Sudoku/Maze/ARC)에서 강한 결과. 같은 실험 틈새를 선점
      하고 있으므로 관련 연구에 필수 인용.
-   - **살아남은 좁은 빈 칸**: *TTT/메모리 모듈의 자기지도 손실 자체가 halting
-     신호가 되는 구성*(별도 라우터·Q-head·RL 불필요, "공짜 신호"). 2026-07-06
-     검색 기준 선행 없음.
+   - **살아남은 좁은 빈 칸(bake-off로 더 좁혀짐)**: *TTT/메모리 모듈의 자체
+     dynamics가 halting 신호가 되는 구성*(별도 라우터·Q-head·RL 불필요). 2026-07-06
+     검색 기준 선행 없음. bake-off(10 seeds): raw recon 손실 자체는 halting에서
+     **패배**(−5.6pp), 그러나 latent-step 수렴 노름(dstate≈‖∇_s L‖)은 **정확도 무손실**
+     (단 보수적 — 거의 halt 안 함; compute 절감은 conv만) → 빈 칸은 "raw miss"가 아니라
+     *내부 최적화의 수렴*이 깊이 신호가 되는 구성으로 좁혀짐.
 2. **C3 "같은 신호의 양면" — 전제가 아니라 가설.** 이 동일성은 latent step이
    메모리 손실에 대한 (근사) 경사 하강일 때만 성립한다. 반례 두 방향: 수렴했지만
    surprise 높음(비가역 오차·noisy-TV — 영원히 halt 안 함), surprise 낮지만 계산
-   미완(예측 가능한 multi-hop 체인 — 조기 halt). 후자는 Part 3에서 실제로 관측됨
-   (halting on 시 −9.6pp). 개념 계보로 predictive coding / free energy(Rao &
-   Ballard 1999; Friston)를 인용할 것 — "하나의 예측 오차가 추론 정착과 시냅스
-   갱신을 모두 구동"은 이 전통의 아이디어이며, 소유하면 강점이고 숨기면 약점.
+   미완(예측 가능한 multi-hop 체인 — 조기 halt). 후자는 Part 3에서 *entropy*
+   halting으로 관측(초기 −9.6pp, curriculum+aux·10시드 재측정 −5.6pp) — **단
+   bake-off가 이는 entropy/recon 신호 한정임을 확정**(conv/dstate는 −0.0pp) →
+   조기-halt 반례는 mechanism이 아니라 신호 선택 문제로 귀결. 개념 계보로 predictive
+   coding / free energy(Rao & Ballard 1999; Friston)를 인용할 것 — "하나의 예측
+   오차가 추론 정착과 시냅스 갱신을 모두 구동"은 이 전통의 아이디어이며, 소유하면
+   강점이고 숨기면 약점.
 3. **§6 대비 실제 실행 규모**: 1B 모델·GSM8K·H2 frontier는 미착수. 현재 증거는
-   0.2–0.9M 파라미터 합성 과제의 메커니즘 파일럿이며, 단일 시드·eval-batch tau
-   캘리브레이션 등 위생 항목이 bake-off 재실행에 걸려 있다 (PROJECT.md §7).
+   0.2–0.9M 파라미터 합성 과제의 메커니즘 파일럿. 위생: **bake-off(Part 3-B)·reachp2는
+   10 seeds + held-out tau로 해소**, Parts 1–2는 여전히 단일 시드·eval-batch tau(잔여).
+   다음은 외부 legible 과제(MQAR)로의 전이 검정 (PROJECT.md §7).

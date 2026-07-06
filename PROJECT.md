@@ -8,10 +8,15 @@
 > (fast-weight / TTT update). surprise high → keep thinking + update memory
 > more. surprise low → halt + stop.
 >
-> **Not yet demonstrated.** The positive experiments so far drive the two knobs
-> with two related but distinct signals (write: reconstruction error; halt:
-> readout entropy). See §4 for the calibrated claim and §7 for the plan to
-> close the gap.
+> **Status (2026-07-06, post-bake-off).** The *literal* form of this hypothesis
+> does **not hold for the halting knob**: in a 10-seed bake-off the
+> reconstruction-error scalar *loses* at halting (−5.6pp; with the tested signal
+> definition + held-out `tau`). A convergence signal halts without accuracy cost —
+> but `dstate` (≈‖∇_s L‖) does so *conservatively* (barely halts early), and the
+> compute-efficient halter is readout convergence (`conv`), which has no write
+> role. Honest reading: **depth and write want different observables**; the
+> "one signal, two knobs" unification is at best a cautious, still-untested
+> interpretation. See §4 for the recalibrated claim, §7 for what's next.
 
 ---
 
@@ -36,6 +41,12 @@ stops moving") and Titans/PonderTTT's *surprise* update ("write more when
 surprised") **may be the same signal read two ways** — but the identity holds
 only when the latent step approximates gradient descent on the memory loss.
 Treating this as a hypothesis to test (not a premise) is part of the project.
+**Bake-off outcome (§4)**: the convergence reading (`dstate` ≈ ‖Δs‖ ≈ η‖∇_s L‖)
+*does* halt without cost — but as the *conservative/safe* member of the family,
+while the most compute-efficient halting signal is readout convergence (`conv`),
+which is **not** the memory-loss gradient. The "two ways of one signal" identity
+is thus directionally supported for `dstate`, but is not the whole story of what
+halts best.
 
 ## 3. Literature positioning (verified 2026-07-03; revised 2026-07-06)
 
@@ -55,34 +66,47 @@ Building blocks (arXiv, all verified): Coconut 2412.06769 · FR-Ponder 2509.2423
 - **HRM 2506.21734 · TRM 2510.04871**: tiny recursive models with learned
   Q-halting + persistent state on synthetic reasoning — the same experimental
   niche, much stronger task results; also to be cited.
-- The **remaining open cell (narrowed)**: *the TTT/memory module's own
-  self-supervised loss serving as the halting signal* — no learned router,
-  Q-head, or RL. No prior work found as of 2026-07-06. This is also exactly
-  the configuration our positive experiments have **not yet run** (§4).
+- The **remaining open cell (narrowed further by the bake-off)**: *the TTT/memory
+  module's own dynamics serving as the halting signal* — no learned router,
+  Q-head, or RL. No prior work found as of 2026-07-06. The bake-off (§4) ran this:
+  the raw reconstruction loss (`recon`) **loses** at halting, but the latent-step
+  convergence norm (`dstate` ≈ ‖∇_s L‖) is **accuracy-preserving** (conservatively)
+  — so the open cell narrows to *convergence of the inner optimization*, not the
+  raw miss, as the depth signal.
 
 See `docs/proposal.md`.
 
-## 4. Main claim (calibrated 2026-07-06)
+## 4. Main claim (recalibrated 2026-07-06, post 10-seed bake-off)
 
-> Each test-time axis works when driven by *a* suitable signal — depth halting
-> by prediction-convergence (Part 1), fast-weight memory by error-gated
-> delta-rule writes with entropy-based early exit (Part 2). **A single shared
-> signal driving both, and joint control on a task that needs both, are not yet
-> demonstrated** — in the joint task, turning halting on currently *costs*
-> accuracy.
+> Each test-time axis works when driven by *a* suitable signal — depth halting by
+> prediction/state **convergence**, fast-weight memory by error-gated delta-rule
+> writes. The 10-seed bake-off shows the earlier "joint halting costs accuracy"
+> was **not inevitable for every stopping rule**: entropy/recon halting cost −5.6pp
+> (confident-wrong early exits), but convergence signals preserve accuracy (−0.0pp
+> vs persist 72.0±0.6%). **Two honesty caveats**: `dstate` preserves accuracy
+> largely by being *conservative* (5.93/6 steps — its optimal `tau` barely halts
+> early), while the only signal that *also* saves compute is `conv` (5.0±0.6 steps,
+> 34% correct early exits — but *seed-fragile*: real saving on 7/10 seeds,
+> dstate-like on 3/10) — which is **not** the memory-gradient / write signal.
+> So the *strong* thesis (one scalar drives both knobs) is dead; the plainer
+> honest reading is that **depth and write want different observables**
+> (convergence for depth, reconstruction-miss for write). A *weak, interpretive*
+> unification — both are gradients of one memory loss (∇_s L / ∇_W L) — is
+> consistent but near-trivial as stated; it earns content only if the halt signal
+> is shown to *predict the write magnitude* (untested; the MQAR probe, §7).
 
-Evidence is a three-part chain:
+Evidence chain (Parts 1–2 single-seed; **3-B is 10 seeds + held-out tau**; reachp2 is 10 seeds but its headline uses no halting, so tau-leakage is moot there — its `+halt`/`both` configs still use scored-batch tau):
 
 | # | claim | task | key number | status |
 |---|---|---|---|---|
 | 1 | depth tracks difficulty | in-context reachability | `corr(K, halt)=+0.92`, 100% (convergence halting, hindsight; single seed, log not archived) | ✅ |
-| 2 | memory buys accuracy + compute | hidden-rule (partial obs) | persist 5→81% (both 5→79%); both 2.4 vs 8.0 latent steps; `corr(ans, entropy)=−0.96` | ✅ |
-| 3 | joint (depth + memory) | partial-obs reachability | amortization holds w/o halting (22→41%), **halting costs −9.6pp** (both 25.7% vs persist 35.3%); depth saturates K≥2 | 🔴 joint / 🟡 memory-only |
+| 2 | memory buys accuracy + compute | hidden-rule (partial obs) | persist 5→81%; both 2.4 vs 8.0 latent steps; `corr(ans, entropy)=−0.96` | ✅ |
+| 3 | joint, *entropy* halt (historical) | partial-obs reachability | amortization holds w/o halting; entropy halting costs accuracy | 🟡 superseded by 3-B |
+| 3-B | joint halting **accuracy-preserving** w/ convergence signal (conv saves compute; dstate conservative) | partial-obs reachability, **10-seed** bake-off | conv/dstate −0.0pp vs persist 72.0±0.6%; entropy/recon −5.6pp (early-wrong 8–9%) | ✅ |
 
-Caveats that apply to all rows: single seed, tau calibrated on the eval batch,
-compute counted in latent steps (write cost excluded). A Part-3 `ans`-labeling
-artifact (probes solvable from current-query reveals labeled unanswerable) was
-fixed 2026-07-06; `corr` re-measured after the fix (see `docs/RESULTS.md`).
+A Part-3 `ans`-labeling artifact (probes solvable from current-query reveals
+labeled unanswerable) was fixed 2026-07-06; `corr` re-measured after the fix.
+Full numbers + the bake-off decomposition: **`docs/RESULTS.md`** §"Part 3-B".
 
 Full numbers + figures: **`docs/RESULTS.md`**. Experiment history: **`docs/exp_logs/LOG.md`**.
 
@@ -97,7 +121,7 @@ awe/
 ├── src/awe/
 │   ├── datasets/         # reachability.py · amort.py · rule.py · reachp.py
 │   ├── models/           # recurrent.py · ttt.py · amort.py · memory.py
-│   └── experiments/      # depth_sanity · ablation_{ttt,amort,rule,reachp,reachp2}
+│   └── experiments/      # depth_sanity · ablation_{ttt,amort,rule,reachp,reachp2,reachp3}
 ├── docs/
 │   ├── proposal.md       # full research proposal (snapshot + dated addendum)
 │   ├── RESULTS.md        # results writeup (3-part + signal inventory)
@@ -118,28 +142,37 @@ python -m awe.experiments.ablation_reachp2 --steps 8000  # sharpened joint (curr
 (Or without install: `PYTHONPATH=src python -m awe.experiments.ablation_rule`.)
 Uses GPU if available, else CPU (models are ~0.2–0.9M params — CPU is fine).
 
-## 7. Roadmap (revised 2026-07-06)
+## 7. Roadmap (revised 2026-07-06, post-bake-off)
 
 - [x] Depth-only proof (in-context reachability) — convergence halting.
 - [x] Memory-only proof (hidden-rule) — entropy halting + delta-rule writes.
-- [x] Joint stress-test (partial-obs reachability) — **negative for joint control**
-  (halting costs −9.6pp); memory-only amortization holds.
-- [x] Fix Part-3 `ans` labeling artifact; re-measure corr (2026-07-06).
-- [ ] **Halting-signal bake-off** (the decisive experiment): on Parts 2–3 with
-  held-out tau and ≥5 seeds, compare — (a) shared recon-error for both knobs
-  (`ttt.py`-style, the actual thesis, never yet run on a positive task),
-  (b) Δsurprise variant, (c) Δstate / step-KL convergence, (d) entropy
-  (current), (e) random halting matched to avg steps, (f) fixed depth at
-  matched compute. Plus per-example failure decomposition of halts
-  (early-wrong / early-right / never-confident).
-- [ ] Sharpen joint: K-curriculum + aux next-node loss + d=256 (`ablation_reachp2`)
-  — base learner must solve K≥2 at fixed depth before any controller verdict.
-- [ ] Scale to externally legible tasks (MQAR / in-context regression) vs TTT
-  baselines — **only after** the bake-off says the shared signal survives.
-- **Kill criterion**: if, with the labeling fix + held-out tau + a base learner
-  that solves K≥2, the best shared-signal controller loses to the best
-  two-signal controller by >5pp at matched average compute across ≥3 seeds,
-  retire the unification thesis and pivot (diagnosis paper, or make the
-  equivalence true by construction: latent step = GD on the memory loss).
+- [x] Joint stress-test (partial-obs reachability) — memory amortization holds;
+  entropy halting costs accuracy (later shown signal-specific).
+- [x] Fix Part-3 `ans` labeling artifact; re-measure corr.
+- [x] Sharpen joint: K-curriculum + aux + d=256 (`ablation_reachp2`, **10 seeds**)
+  — persist 72.1±0.6%, which isolates the halting signal as the remaining bottleneck.
+- [x] **Halting-signal bake-off** (`ablation_reachp3`, **10 seeds**, held-out tau,
+  failure decomposition): entropy/recon lose −5.6pp; conv/dstate −0.0pp (conv also
+  saves compute, dstate conservative). **Verdict** — the joint halting cost was a
+  *signal choice*; convergence-halting is a good depth controller, but the *strong*
+  unification (one scalar drives both optimally; recon drives both) is **dead**, and
+  the *weak* "two gradients of one loss" reading is only a cautious interpretation
+  (depth & write want different observables). See §4 · `docs/RESULTS.md` 3-B.
+- [ ] **Scale to an externally legible task** (convergence-halting is a useful depth
+  controller → test its transfer):
+  **MQAR** (multi-query associative recall; `HazyResearch/zoology` harness; Zoology
+  2312.04927 / Based 2402.18668) as the first target — KV-pair count is a difficulty
+  axis (like our K) with a competitive published baseline table (Transformer
+  ceiling, Based, Mamba-2, DeltaNet 2406.06484, Gated DeltaNet 2412.06464). Test
+  whether a **convergence-halting** controller transfers (matches fixed-depth at
+  lower compute, vs a delta-rule/TTT baseline). In-context linear regression (Garg
+  2208.01066 / von Oswald 2212.07677) is a follow-up mechanistic probe for ‖Δs‖∝‖∇L‖.
+- **Kill criterion (weak thesis)**: if convergence-halting does not transfer to
+  MQAR — best convergence controller loses to fixed-depth at matched compute by
+  >5pp across ≥3 seeds — the unification is synthetic-only; pivot to a diagnosis writeup.
+- *Fallback (only if a reviewer demands the exact identity)*: make the equivalence
+  true by construction (latent step = GD on the memory loss). **Deprioritized** —
+  the review found it largely tautological and the write-tie incoherent at the
+  RuleReasoner's per-query/per-step granularity (see `docs/REVIEW.md`).
 
 *Research WIP — Dongwan Yoo, DAIS @ KIER, 2026. See LICENSE.*
