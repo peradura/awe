@@ -1,6 +1,8 @@
-"""Memory-centric surprise-unified reasoner for the hidden-rule task.
+"""Memory-centric reasoner for the hidden-rule task.
 
-Two knobs, one surprise signal:
+Two knobs, driven by two related but DISTINCT signals (the shared-signal
+unification is the open hypothesis — see README status note; the shared-signal
+variant lives in awe.models.ttt):
   [B weight] a persistent associative fast-weight M writes each revealed pair
              (x -> pi(x)) via a normalized delta rule (write strength grows
              with the reconstruction miss). M persists across the query stream.

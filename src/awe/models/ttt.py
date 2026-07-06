@@ -95,7 +95,8 @@ class SurpriseReasoner(nn.Module):
         """Run `steps` hops. Returns per-step logits and surprise (lists).
 
         No halting here -- halting is applied post-hoc from the surprise trace
-        (see ablation.halt_from_trace) so a single rollout serves every tau.
+        (see awe.experiments.ablation_ttt.halt_from_trace) so a single rollout
+        serves every tau.
 
         The fast-weight write is a NORMALIZED delta rule with a forgetting
         gate: g = 2 (hat-ctx) s_ln^T / ||s_ln||^2, delta <- (1-decay) delta - lr*g.

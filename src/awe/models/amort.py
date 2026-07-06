@@ -1,4 +1,4 @@
-"""Amortization model: same surprise-unified reasoner as model_ttt, but
+"""Amortization model: same surprise-unified reasoner as awe.models.ttt, but
 rollout takes an incoming fast-weight `delta` and returns the updated one, so
 a driver can PERSIST the memory across a stream of queries on the same graph.
 

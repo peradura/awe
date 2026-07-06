@@ -96,7 +96,8 @@ holds** (`results/reachp_run.log`):
   still-filling memory would have converted errors into hits (persist's 22→41
   vs both's 20→27 shows the foregone gains). This is the central open problem.
 - Depth *increases* with K but as a step function: halt-step ≈ 2 for K≤1, then
-  **saturates at the budget (10) for K≥2**. The parsimonious reading: the base
+  **jumps toward the budget for K≥2** (8.4 at K=2, 9.6–9.9 for K=3–4, pinned at
+  10 for K≥5). The parsimonious reading: the base
   learner cannot resolve K≥2 chains (loss plateaus ~2.27), entropy never falls,
   and the halting signal correctly reports "not done" — i.e. saturation itself
   is not a signal failure, but there is no evidence of *graded* depth either.

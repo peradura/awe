@@ -99,8 +99,9 @@ awe/
 │   ├── models/           # recurrent.py · ttt.py · amort.py · memory.py
 │   └── experiments/      # depth_sanity · ablation_{ttt,amort,rule,reachp,reachp2}
 ├── docs/
-│   ├── proposal.md       # full research proposal
-│   ├── RESULTS.md        # results writeup (3-part)
+│   ├── proposal.md       # full research proposal (snapshot + dated addendum)
+│   ├── RESULTS.md        # results writeup (3-part + signal inventory)
+│   ├── REVIEW.md         # 2026-07-06 external review record
 │   └── exp_logs/LOG.md   # dated experiment index
 └── results/              # figures + run logs
 ```

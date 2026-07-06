@@ -58,7 +58,9 @@ for t in range(max_steps):
 answer = readout(s)
 ```
 
-This is what `models/ttt.py` implements: the delta-rule write is normalized
+This is what `models/ttt.py` implements (with one decision-equivalent detail:
+the exit threshold is applied post-hoc from the surprise trace so one rollout
+serves every tau — see its docstring): the delta-rule write is normalized
 (`/‖s‖²`) with a forgetting gate applied to the episodic `delta` (on top of a
 frozen `W_base`), first-order/detached, so the memory does not diverge inside
 the loop. **The positive-result model (`models/memory.py`) differs**: it writes
@@ -118,7 +120,7 @@ Experiment log → [`docs/exp_logs/LOG.md`](docs/exp_logs/LOG.md).**
   (`datasets/reachp.py` · `experiments/ablation_reachp.py`): memory-only amortization
   holds (persist 22%→41%), **but turning halting ON costs accuracy**
   (`both` 25.7% vs `persist` 35.3%, −9.6pp; `+halt` 16.0% vs `fixed` 21.0%) and
-  halting saturates the budget for K≥2. An `ans`-labeling artifact attenuating
+  halt-steps jump toward the budget for K≥2 (pinned at 10 by K≥5). An `ans`-labeling artifact attenuating
   `corr` was found and fixed 2026-07-06 (see `docs/RESULTS.md` Part 3).
 - [ ] **Top priority — make the headline true or retire it**: run Parts 2–3 with the
   shared reconstruction-error signal actually driving *both* knobs (`ttt.py`-style),
@@ -135,7 +137,7 @@ src/awe/
 ├── datasets/   reachability.py · amort.py · rule.py · reachp.py   (task generators)
 ├── models/     recurrent.py · ttt.py · amort.py · memory.py       (reasoners)
 └── experiments/ depth_sanity · ablation_{ttt,amort,rule,reachp,reachp2}
-docs/   proposal.md · RESULTS.md · exp_logs/LOG.md
+docs/   proposal.md · RESULTS.md · REVIEW.md · exp_logs/LOG.md
 results/  figures + run logs
 ```
 See [`PROJECT.md`](PROJECT.md) for the full narrative and file roles.
