@@ -125,23 +125,29 @@ Uses GPU if available, else CPU (models are ~0.2–0.9M params — CPU is fine).
 - [x] Joint stress-test (partial-obs reachability) — **negative for joint control**
   (halting costs −9.6pp); memory-only amortization holds.
 - [x] Fix Part-3 `ans` labeling artifact; re-measure corr (2026-07-06).
-- [~] **Halting-signal bake-off** (the decisive experiment) — **script ready,
-  awaiting a GPU window** (`experiments/bakeoff.py`, runner `scripts/sweep.sh`,
-  polite shared-GPU launcher `scripts/gpu_watch_run.sh`, see `docs/RUNBOOK.md`):
-  on Parts 2–3 tasks with held-out tau and ≥5 seeds, compare — (a) recon-error
-  read-decodability (the shared-signal thesis), (b) Δsurprise (`dent`),
-  (c) Δstate convergence, (d) entropy (current), (e) read-energy (`rnorm`),
-  plus shuffled-steps controls and the fixed-depth compute-matched frontier.
-  Includes per-example failure decomposition of halts (early_right / premature /
-  wrong_anyway / budget) and per-signal corr(answerable, signal@0).
-- [ ] Sharpen joint: K-curriculum + aux next-node loss + d=256 (`ablation_reachp2`)
-  — base learner must solve K≥2 at fixed depth before any controller verdict.
+- [x] **Halting-signal bake-off — DONE, verdict in** (`docs/RESULTS.md` Part 4;
+  two independent runs × 5 seeds: `experiments/bakeoff.py` on the weak-learner
+  tasks, `experiments/ablation_reachp3.py` on the strong learner):
+  **convergence-family signals (readout convergence / Δstate) make halting
+  free** (71.9±0.3% = persist ceiling @ 5.18 steps; early-wrong 2%); entropy
+  and recon thresholds fail on joint tasks; recon ≈ entropy on the memory-only
+  task. Part 3's −9.6pp reinterpreted as tau-calibration artifact +
+  signal-choice error.
+- [x] Sharpen joint (`ablation_reachp2`): base-learner bottleneck fixed
+  (persist 35→72%); numbers robust across protocols (median vs held-out tau,
+  pre/post ans-fix: corr −0.44 twice independently).
+- **Kill criterion: NOT triggered.** The literal "low recon-error → halt" is
+  refuted on joint tasks, but the convergence reading wins everywhere — the
+  thesis pivots, not dies: *halt when surprise stops moving the state, write
+  in proportion to surprise* (Δs ∝ ∇L).
+- [ ] **Next (theory-to-architecture)**: make the equivalence structural —
+  latent step = gradient descent on the memory loss, so convergence-halting
+  *provably equals* vanishing-surprise-gradient halting; then the single
+  scalar drives both knobs by construction.
 - [ ] Scale to externally legible tasks (MQAR / in-context regression) vs TTT
-  baselines — **only after** the bake-off says the shared signal survives.
-- **Kill criterion**: if, with the labeling fix + held-out tau + a base learner
-  that solves K≥2, the best shared-signal controller loses to the best
-  two-signal controller by >5pp at matched average compute across ≥3 seeds,
-  retire the unification thesis and pivot (diagnosis paper, or make the
-  equivalence true by construction: latent step = GD on the memory loss).
+  baselines and learned-halting (Q-head/ACT) baselines — the two-signal
+  comparison the bake-off did not yet include.
+- [ ] Housekeeping: regenerate `depth_sanity` log; FLOPs accounting including
+  write cost; pin dependency versions.
 
 *Research WIP — Dongwan Yoo, DAIS @ KIER, 2026. See LICENSE.*
