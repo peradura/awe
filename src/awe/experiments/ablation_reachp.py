@@ -21,8 +21,8 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from data_reachp import ReachPConfig, make_batch
-from model_rule import RuleReasoner
+from awe.datasets.reachp import ReachPConfig, make_batch
+from awe.models.memory import RuleReasoner
 
 
 def slice_q(data, q):

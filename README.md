@@ -69,12 +69,17 @@ model, evaluated four ways:
 
 ```bash
 uv venv --python 3.12 .venv
-uv pip install --python .venv/bin/python -r requirements.txt   # Windows: .venv\Scripts\python.exe
+uv pip install --python .venv/bin/python -e .     # installs the `awe` package
 
-python train_eval.py --steps 3000     # Increment 1: harness sanity
-python ablation.py  --steps 4000      # Increment 2: 4-way ablation -> accuracy_vs_steps.png
+python -m awe.experiments.ablation_rule    --steps 3000   # memory-knob pilot (positive)
+python -m awe.experiments.depth_sanity     --steps 3000   # depth-knob sanity
+python -m awe.experiments.ablation_reachp2 --steps 8000   # sharpened joint (curriculum+aux)
 ```
-Uses GPU if available, else CPU (the model is ~0.75M params — CPU is fine).
+(Or without install: `PYTHONPATH=src python -m awe.experiments.ablation_rule`.)
+Uses GPU if available, else CPU (models are ~0.2–0.9M params — CPU is fine).
+
+**Full overview → [`PROJECT.md`](PROJECT.md). Results → [`docs/RESULTS.md`](docs/RESULTS.md).
+Experiment log → [`docs/exp_logs/LOG.md`](docs/exp_logs/LOG.md).**
 
 ## Status
 
@@ -82,33 +87,33 @@ Uses GPU if available, else CPU (the model is ~0.75M params — CPU is fine).
   `corr(K, steps-to-converge) ≈ +0.92`.
 - [x] **Increment 2** — surprise-unified fast-weight model + 4-way ablation.
 - [x] **Reachability = negative result** — full-table graph makes memory redundant
-  (all configs 100%, flat amortization). Motivated the pivot below. See `RESULTS.md`.
+  (all configs 100%, flat amortization). Motivated the pivot below. See `docs/RESULTS.md`.
 - [x] **Hidden-rule pilot ✅ (first positive)** — partial-observation permutation stream
   (`data_rule.py` · `model_rule.py` · `ablation_rule.py`): **capability gap**
   (persist 5%→81%, reset stays at chance), **amortization** (`both` compute 7.95→1.21
-  steps across the stream), **surprise = memory-miss** (`corr = −0.96`). See `RESULTS.md`.
+  steps across the stream), **surprise = memory-miss** (`corr = −0.96`). See `docs/RESULTS.md`.
 - [~] **Joint stress-test** — partial-obs reachability (`data_reachp.py` · `ablation_reachp.py`):
   directional (persist 22%→41%; depth rises with K but saturates; corr −0.23). Base-learner
-  limited, not a mechanism failure. See `RESULTS.md` Part 3.
+  limited, not a mechanism failure. See `docs/RESULTS.md` Part 3.
 - [ ] Sharpen joint: K-curriculum + auxiliary next-node loss + easier config / more capacity.
 
-## Files
+## Layout
 
-| file | role |
-|---|---|
-| `data.py` | functional-graph reachability generator (difficulty = hops) |
-| `model.py` / `train_eval.py` | Increment 1 recurrent-depth reasoner |
-| `model_ttt.py` | Increment 2 surprise-unified fast-weight reasoner |
-| `ablation.py` | 4-way ablation + frontier figure |
-| `data_rule.py` / `model_rule.py` / `ablation_rule.py` | **hidden-rule pilot** (positive result) |
-| `RESULTS.md` | results writeup (hidden-rule win + reachability negative) |
-| `proposal.md` | full research proposal (motivation, gap, hypotheses, roadmap) |
+```
+src/awe/
+├── datasets/   reachability.py · amort.py · rule.py · reachp.py   (task generators)
+├── models/     recurrent.py · ttt.py · amort.py · memory.py       (reasoners)
+└── experiments/ depth_sanity · ablation_{ttt,amort,rule,reachp,reachp2}
+docs/   proposal.md · RESULTS.md · exp_logs/LOG.md
+results/  figures + run logs
+```
+See [`PROJECT.md`](PROJECT.md) for the full narrative and file roles.
 
 ## Related work
 
 Coconut (arXiv:2412.06769) · FR-Ponder (2509.24238) · Recurrent Depth
 (2502.05171) · PonderTTT (2601.00894) · Titans (2501.00663) · TTT layers
-(2407.04620) · PonderNet (2107.05407). See `proposal.md` for how AWE sits
+(2407.04620) · PonderNet (2107.05407). See `docs/proposal.md` for how AWE sits
 among them.
 
 ---

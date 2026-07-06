@@ -14,8 +14,8 @@ import random
 import torch
 import torch.nn.functional as F
 
-from data import GraphConfig, vocab_size, v0_pos, make_batch
-from model import Reasoner, entropy, step_kl
+from awe.datasets.reachability import GraphConfig, vocab_size, v0_pos, make_batch
+from awe.models.recurrent import Reasoner, entropy, step_kl
 
 
 def train(model, cfg, opt, device, steps, batch, rng, log_every=300):

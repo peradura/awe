@@ -22,8 +22,8 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from data import GraphConfig, vocab_size, v0_pos, make_batch
-from model_ttt import SurpriseReasoner
+from awe.datasets.reachability import GraphConfig, vocab_size, v0_pos, make_batch
+from awe.models.ttt import SurpriseReasoner
 
 
 # ----------------------------- training --------------------------------------

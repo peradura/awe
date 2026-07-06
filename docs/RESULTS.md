@@ -46,7 +46,7 @@ the **weight knob** and is the strongest result:
 - Net: same accuracy as `persist` at **2.4 vs 8.0** steps (3.3× less compute),
   and the saving grows along the stream.
 
-![hidden-rule](results/rule_curve.png)
+![hidden-rule](../results/rule_curve.png)
 
 ## Part 3 — Joint stress-test (`data_reachp.py`, `ablation_reachp.py`)
 
@@ -66,7 +66,7 @@ long chains (loss plateaus ~2.27; K≥2 chains fail → halting just hits the bu
 Next: K-curriculum + auxiliary next-node loss + easier config + more capacity
 (see roadmap).
 
-![partial-obs reachability](results/reachp_curve.png)
+![partial-obs reachability](../results/reachp_curve.png)
 
 ## Negative baseline (retained)
 

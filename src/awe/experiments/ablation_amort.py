@@ -25,8 +25,8 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from data_amort import AmortConfig, vocab_size, v0_pos, make_batch
-from model_amort import AmortReasoner
+from awe.datasets.amort import AmortConfig, vocab_size, v0_pos, make_batch
+from awe.models.amort import AmortReasoner
 
 
 def train(model, cfg, opt, device, steps, batch, rng, lr_inner, lam, log_every=200):

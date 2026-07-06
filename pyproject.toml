@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "awe"
+version = "0.1.0"
+description = "AWE — one surprise signal for adaptive depth halting + fast-weight memory update"
+requires-python = ">=3.10"
+dependencies = ["torch", "numpy", "matplotlib"]
+
+[tool.setuptools.packages.find]
+where = ["src"]

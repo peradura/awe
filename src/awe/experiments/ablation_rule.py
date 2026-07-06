@@ -22,8 +22,8 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from data_rule import RuleConfig, make_batch
-from model_rule import RuleReasoner
+from awe.datasets.rule import RuleConfig, make_batch
+from awe.models.memory import RuleReasoner
 
 
 def slice_q(data, q):
