@@ -18,12 +18,12 @@ The evidence chain:
 | # | claim | task | key number | status |
 |---|---|---|---|---|
 | 1 | depth halting tracks difficulty | in-context reachability | `corr(K, halt) = +0.92` | ✅ |
-| 2 | memory buys accuracy + compute | hidden-rule (partial obs) | persist 5%→81% (5 seeds: 50.6±0.3%); both 2.45±0.11 vs 8.0 steps | ✅ |
-| 3 | joint (depth + memory) | partial-obs reachability | entropy-halting costs −9.3±0.5pp (5 seeds) — reinterpreted in Part 4 | 🔴 with entropy |
+| 2 | memory buys accuracy + compute | hidden-rule (partial obs) | persist 5%→81% (10 seeds: 50.5±0.4%); both 2.42±0.10 vs 8.0 steps | ✅ |
+| 3 | joint (depth + memory) | partial-obs reachability | entropy-halting costs −9.5pp (10 seeds: 35.1±0.7 vs 25.6±0.4) — reinterpreted in Part 4 | 🔴 with entropy |
 | 4 | **which signal halts correctly** | bake-off, weak+strong learners | conv 71.9±0.3% @ 5.18 steps = persist ceiling; ent/recon lose | ✅ convergence family |
 
-**Cross-cutting caveats** (updated): headline rows now carry 5-seed mean±std
-(seeds 5–9 for rule/reachp ablations and bakeoff; seeds 0–4 for reachp3);
+**Cross-cutting caveats** (updated): headline rows now carry 10-seed mean±std
+(seeds 0–9 for rule/reachp ablations and bakeoff; seeds 0–4 for reachp3);
 held-out tau calibration is in effect for all bake-off numbers (archived
 pre-fix logs retained); "compute" = latent retrieval steps only (delta-rule
 write FLOPs are unaffected by halting); models are 0.2–0.9M params on
@@ -137,16 +137,16 @@ early-right / never-confident), K-curriculum + aux next-node loss + capacity
 Two independent implementations, both 5 seeds, held-out tau, with
 shuffled-steps nulls / fixed-depth frontiers / per-halt failure decomposition:
 
-**(a) Weak-learner tasks** (`bakeoff.py`, seeds 5–9, original rule & reachp):
+**(a) Weak-learner tasks** (`bakeoff.py`, seeds 0–9, original rule & reachp):
 
 | task | signal | acc | steps | verdict |
 |---|---|---|---|---|
-| rule | ent | 50.0±0.4% | 2.22 | works |
-| rule | **recon** | 50.0±0.3% | 2.30 | **≈ ent → free-signal thesis holds on memory task** |
-| rule | dstate | 50.1±0.4% | **1.85** | best |
-| reachp | ent | 34.7±0.6% | 9.66 | refuses to halt (safe but useless) |
-| reachp | recon | 31.9±0.6% | 8.42 | −2.8pp, tau fallback |
-| reachp | **dstate** | 33.8±0.6% | **6.21** | **only useful operating point** (−0.9pp at 62% compute, premature 3%) |
+| rule | ent | 50.1±0.7% | 2.22 | works |
+| rule | **recon** | 50.1±0.5% | 2.38 | **≈ ent → free-signal thesis holds on memory task** |
+| rule | dstate | 50.3±0.6% | **1.90** | best |
+| reachp | ent | 34.7±0.6% | 9.71 | refuses to halt (safe but useless) |
+| reachp | recon | 31.7±0.6% | 8.39 | −3.4pp, tau fallback |
+| reachp | **dstate** | 33.8±0.6% | **6.28** | **only useful operating point** (−1.3pp at 63% compute, premature ~3%) |
 
 **(b) Strong-learner task** (`ablation_reachp3.py`, seeds 0–4, reachp2 config
 where persist = 71.9%):
