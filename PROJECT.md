@@ -158,15 +158,17 @@ Uses GPU if available, else CPU (models are ~0.2–0.9M params — CPU is fine).
   unification (one scalar drives both optimally; recon drives both) is **dead**, and
   the *weak* "two gradients of one loss" reading is only a cautious interpretation
   (depth & write want different observables). See §4 · `docs/RESULTS.md` 3-B.
-- [ ] **Scale to an externally legible task** (convergence-halting is a useful depth
-  controller → test its transfer):
-  **MQAR** (multi-query associative recall; `HazyResearch/zoology` harness; Zoology
-  2312.04927 / Based 2402.18668) as the first target — KV-pair count is a difficulty
-  axis (like our K) with a competitive published baseline table (Transformer
-  ceiling, Based, Mamba-2, DeltaNet 2406.06484, Gated DeltaNet 2412.06464). Test
-  whether a **convergence-halting** controller transfers (matches fixed-depth at
-  lower compute, vs a delta-rule/TTT baseline). In-context linear regression (Garg
-  2208.01066 / von Oswald 2212.07677) is a follow-up mechanistic probe for ‖Δs‖∝‖∇L‖.
+- [~] **Scale to an externally legible task** — **first MQAR run done (2026-07-07,
+  10 seeds)**: convergence-halting *transfers* (`conv` matches the ceiling at
+  2.53/6 steps, ~58% compute saved, no bimodality), but single-hop MQAR does **not**
+  discriminate signals (all four are cost-free — its errors are the ~30%
+  *unanswerable* probes, not confident-wrong multi-hop; no depth∝difficulty, only
+  amortization). See `docs/mqar_design.md` "First-run result". **Queued**: a harder
+  MQAR variant (interference ↑ / longer seq / multi-hop) to reproduce reachp's
+  signal-discrimination. Baseline table for anchoring: Transformer ceiling, Based
+  2402.18668, Mamba-2, DeltaNet 2406.06484, Gated DeltaNet 2412.06464
+  (`HazyResearch/zoology` harness). In-context linear regression (Garg 2208.01066 /
+  von Oswald 2212.07677) remains a follow-up mechanistic probe for ‖Δs‖∝‖∇L‖.
 - **Kill criterion (weak thesis)**: if convergence-halting does not transfer to
   MQAR — best convergence controller loses to fixed-depth at matched compute by
   >5pp across ≥3 seeds — the unification is synthetic-only; pivot to a diagnosis writeup.

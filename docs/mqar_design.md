@@ -1,7 +1,8 @@
 # External-task design — MQAR transfer of convergence-halting
 
-**Status: design + skeleton (2026-07-06). Not yet run — training needs GPU approval.**
-Grounds the roadmap item `PROJECT.md §7` ("scale to an externally legible task").
+**Status: first run done (2026-07-07, 10 seeds, GPU1). Transfer confirmed, but this
+single-hop config lacks signal-discrimination — a harder variant is queued (see
+"First-run result").** Grounds the roadmap item `PROJECT.md §7`.
 
 ## Why this experiment, framed honestly
 
@@ -97,6 +98,41 @@ instantiated on MQAR.)
 - `src/awe/experiments/ablation_mqar.py` — arms above, reusing the reachp3 harness
   (runnable skeleton; a CPU smoke run validates the pipeline before any GPU run).
 - Design doc (this file).
+
+## First-run result (2026-07-07, 10 seeds, GPU1)
+
+Single-hop MQAR (vocab n=64, m=4 KV/query, Q=12, T=6, p_ans=0.7), 6k steps.
+Persist ceiling **68.2±0.5%** (≈97% recall of the ~70% answerable probes; the
+~30% unanswerable — unseen keys — are wrong at any depth). Halting bake-off:
+
+| halt signal | acc | avg steps | early-wrong | early-right | corr(ans, sig₀) |
+|---|---|---|---|---|---|
+| `conv`    | 68.3% | **2.53** | 32% | 68% | −0.13 |
+| `dstate`  | 68.3% | 4.41 | 32% | 8%  | +0.45 |
+| `entropy` | 68.2% | 5.55 | 0%  | 10% | −0.82 |
+| `recon`   | 68.2% | 5.37 | 18% | 4%  | −0.38 |
+
+**Read:**
+1. ✅ **Convergence-halting transfers.** `conv` matches the ceiling (+0.1pp) at
+   **2.53/6 steps (~58% compute saved)** — a *larger* saving than on reachp (5.0
+   steps), and robust (no bimodality here). Primary question = **yes**.
+2. ⚠️ **This config does not discriminate signals.** *All four* signals are
+   accuracy-cost-free (+0.0–0.1pp), unlike reachp (entropy/recon −5.6pp). Reason:
+   MQAR's errors are the ~30% **unanswerable** probes (wrong at any depth), so
+   halting early on them costs nothing — `conv`'s 32% "early-wrong" is *correctly
+   abandoning unsolvable* recalls, not prematurely quitting solvable ones. The
+   single-hop task has no confident-wrong-multi-hop failure mode, which is exactly
+   what made signal choice matter on reachp.
+3. **No depth∝difficulty; amortization instead.** `dstate` halt-step *decreases*
+   with memory load (~4.8 at low load → ~3.3 at high) — later-stream recalls are
+   faster, not harder. Single-hop MQAR has no per-probe difficulty axis.
+
+**Verdict**: confirms "convergence-halting is a cost-free, compute-saving depth
+controller on an external task," but does **not** reproduce reachp's
+signal-discrimination. **Queued**: a harder variant (multi-query interference ↑ /
+longer sequences / a multi-hop recall chain) to induce the confident-wrong failure
+mode and test whether entropy/recon lose there too — run when the GPU is fully free.
+Artifacts: `results/mqar_seed{0..9}.json`, `results/mqar_bakeoff.png`.
 
 ## References (verified 2026-07-06)
 
