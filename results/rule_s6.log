@@ -1,0 +1,24 @@
+device=cpu | params=0.22M | n=20 m=3 Q=10 T=8
+== train (memory persists across the stream) ==
+  step     1 | loss 3.1716
+  step   300 | loss 1.6234
+  step   600 | loss 1.5510
+  step   900 | loss 1.4811
+  step  1200 | loss 1.5212
+  step  1500 | loss 1.4731
+  step  1800 | loss 1.4352
+  step  2100 | loss 1.4392
+  step  2400 | loss 1.3921
+  step  2700 | loss 1.4323
+  step  3000 | loss 1.3982
+saved ckpt -> results/ckpt_rule_s6.pt
+== eval (per-config tau, held-out calibration) ==
+  fixed   | acc   6.1% | steps 8.00 | acc/q 5 5 7 7 7 8 5 6 6 5
+  +halt   | acc   5.4% | steps 1.54 | acc/q 6 5 5 6 5 6 5 5 5 5
+  persist | acc  50.1% | steps 8.00 | acc/q 5 18 32 42 52 59 64 70 78 82
+  both    | acc  49.9% | steps 2.32 | acc/q 5 18 31 42 53 59 65 69 76 82
+== headline (both) ==
+  accuracy: q0=5% -> q9=82%  (Δ +76pp)
+  steps   : q0=7.93  -> q9=1.19   (Δ -6.75)
+  corr(answerable, surprise@0) = -0.969  (expect negative: seen->low surprise)
+saved figure -> results/rule_s6.png
