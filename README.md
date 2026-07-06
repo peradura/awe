@@ -137,9 +137,13 @@ Experiment log → [`docs/exp_logs/LOG.md`](docs/exp_logs/LOG.md).**
   — entropy/recon lose −5.6pp (early-wrong 8–9%); `conv`/`dstate` cost-free (−0.0pp
   vs persist 72.0±0.6%). The literal recon-scalar thesis **fails at halting**; the weak
   convergence unification survives. Per-example failure decomposition included.
-- [ ] **Next — scale to an external task**: MQAR (Zoology 2312.04927 / Based 2402.18668
-  harness) to test whether convergence-halting transfers vs a delta-rule/TTT baseline.
-  See `PROJECT.md` §7.
+- [x] **External task — MQAR (2026-07-07, 10 seeds each)**: convergence-halting
+  *transfers* (single-hop: `conv` matches ceiling at 2.5/6 steps) and is the
+  *discriminating winner* when the task has depth structure (multi-hop: conv/dstate
+  beat entropy/recon **+2.5pp, 10/10 seeds**, at half the compute). reachp's finding
+  generalizes. See `docs/mqar_design.md`.
+- [ ] **Next**: raise the multi-hop base learner (curriculum) + anchor vs a published
+  baseline (Based 2402.18668 / DeltaNet 2406.06484, Zoology harness).
 
 ## Layout
 

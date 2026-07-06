@@ -1,8 +1,9 @@
 # External-task design — MQAR transfer of convergence-halting
 
-**Status: first run done (2026-07-07, 10 seeds, GPU1). Transfer confirmed, but this
-single-hop config lacks signal-discrimination — a harder variant is queued (see
-"First-run result").** Grounds the roadmap item `PROJECT.md §7`.
+**Status: two runs done (2026-07-07, 10 seeds each, GPU1). Single-hop confirms
+transfer but doesn't discriminate signals; the multi-hop variant DOES — conv/dstate
+beat entropy/recon by ~2.5pp (10/10 seeds) at <half the compute, reproducing
+reachp's discrimination on an external associative-recall task.** Grounds `PROJECT.md §7`.
 
 ## Why this experiment, framed honestly
 
@@ -133,6 +134,45 @@ signal-discrimination. **Queued**: a harder variant (multi-query interference �
 longer sequences / a multi-hop recall chain) to induce the confident-wrong failure
 mode and test whether entropy/recon lose there too — run when the GPU is fully free.
 Artifacts: `results/mqar_seed{0..9}.json`, `results/mqar_bakeoff.png`.
+
+## Second run — multi-hop MQAR (2026-07-07, 10 seeds, the *discriminating* test)
+
+`datasets/mqar_hop.py` / `experiments/ablation_mqar_hop.py`: H-hop associative
+recall (target = g^H(q), H∈1..3 = difficulty), which restores depth∝difficulty so
+that halting at the wrong point costs accuracy. 8k steps, p_ans=0.85.
+Persist ceiling **41.6±0.9%** (base learner is weak on H-hop chains — like reachp's
+K≥2 struggle; ~42% of ≤3-hop probes solved). Fixed-depth accuracy **peaks at depth
+3 (41.9%)** then plateaus/slightly drifts to 41.6% at depth 6.
+
+| halt signal | acc | avg steps | gap vs persist | early-wrong | corr(ans, sig₀) |
+|---|---|---|---|---|---|
+| `conv`    | **42.3±0.9%** | **2.48** | +0.7pp | 58% | +0.30 |
+| `dstate`  | 42.2±0.9% | 2.72 | +0.6pp | 58% | +0.21 |
+| `entropy` | 39.5±0.8% | 5.40 | −2.0pp | 7%  | −0.53 |
+| `recon`   | 40.0±0.9% | 5.40 | −1.6pp | 6%  | −0.44 |
+
+**The discrimination reproduces — cleanly and robustly:**
+- **conv/dstate beat entropy/recon by ~2.5pp on *every* seed** (conv−entropy
+  +2.76±0.35pp, conv>entropy 10/10; conv−recon +2.32pp, 10/10) **and at less than
+  half the compute** (2.5 vs 5.4 steps). Convergence signals win on *both* axes.
+- **Mechanism differs from reachp, conclusion is the same.** On reachp, entropy/recon
+  lost by halting *confident-wrong early* (−5.6pp) while conv/dstate matched persist.
+  Here, entropy/recon lose by *failing to detect convergence* — they drift to the
+  budget (5.4/6 steps), past the depth-3 accuracy peak — while conv/dstate stop at
+  the peak (~2.5 steps) and so slightly *beat* persist (the +0.6pp is a mild
+  overshoot-avoidance effect, not a large win). Either way: **entropy/recon are the
+  wrong halting signal; a convergence signal is right.**
+- **depth∝difficulty appears** (absent in single-hop): dstate halt-step 2.75 (H=1)
+  → 3.45 (H=2) → 3.51 (H=3) — graded, saturating.
+- Caveat: 41.6% persist ceiling = weak base learner (mechanism-scale, not a strong
+  MQAR result); the robust claim is the *conv-vs-entropy/recon discrimination*, not
+  the absolute accuracy. Artifacts: `results/mqarhop_seed{0..9}.json`,
+  `results/mqarhop_bakeoff.png`.
+
+**Takeaway across both runs**: convergence-halting (conv/dstate) transfers as a
+cost-free, compute-saving depth controller (single-hop) *and* is the discriminating
+winner over entropy/recon when the task has real depth structure (multi-hop) — the
+reachp finding generalizes to an external associative-recall task.
 
 ## References (verified 2026-07-06)
 
