@@ -1,30 +1,33 @@
 # Results
 
-## Main claim (calibrated 2026-07-06)
+## Main claim (updated 2026-07-06, post bake-off)
 
-> Each test-time axis works when driven by *a* suitable signal: **depth halting**
-> tracks difficulty under prediction-convergence (Part 1), and an **error-gated
-> fast-weight memory** buys both accuracy and compute with entropy-based early
-> exit (Part 2). **What is NOT yet demonstrated**: (i) a *single shared* signal
-> driving both knobs — the positive experiments use two distinct signals
-> (write: reconstruction error, halt: readout entropy) — and (ii) joint control
-> on a task that needs both knobs: in Part 3, turning halting ON **costs**
-> accuracy (−9.6pp).
+> Each test-time axis works when driven by *a* suitable signal, and the
+> **halting-signal bake-off (Part 4, two independent runs × 5 seeds) settles
+> which signal**: on the joint task, **convergence-family signals (readout
+> convergence / Δstate) make halting free** (accuracy at the persist ceiling
+> at 60–86% of the compute), while **entropy and reconstruction-error
+> thresholds fail as halting rules** (lose accuracy or refuse to halt).
+> On the memory-only task, recon ≈ entropy — "TTT loss as a free halting
+> signal" survives there. Surviving thesis form: **state convergence = the
+> memory-loss gradient vanishing (Δs ∝ ∇L)** — one quantity, two readings
+> (halt when it vanishes; write in proportion to it).
 
-The evidence is a three-part chain:
+The evidence chain:
 
 | # | claim | task | key number | status |
 |---|---|---|---|---|
 | 1 | depth halting tracks difficulty | in-context reachability | `corr(K, halt) = +0.92` | ✅ |
-| 2 | memory buys accuracy + compute | hidden-rule (partial obs) | persist 5%→81%; both 2.4 vs 8.0 latent steps; `corr(ans, entropy) = −0.96` | ✅ |
-| 3 | joint (depth + memory) | partial-obs reachability | halting costs −9.6pp (both 25.7% vs persist 35.3%) | 🔴 joint / 🟡 memory-only |
+| 2 | memory buys accuracy + compute | hidden-rule (partial obs) | persist 5%→81% (5 seeds: 50.6±0.3%); both 2.45±0.11 vs 8.0 steps | ✅ |
+| 3 | joint (depth + memory) | partial-obs reachability | entropy-halting costs −9.3±0.5pp (5 seeds) — reinterpreted in Part 4 | 🔴 with entropy |
+| 4 | **which signal halts correctly** | bake-off, weak+strong learners | conv 71.9±0.3% @ 5.18 steps = persist ceiling; ent/recon lose | ✅ convergence family |
 
-**Cross-cutting caveats** (apply to every row; queued for the bake-off re-runs):
-single seed (`--seed 0`) with no variance estimates; halting threshold `tau`
-calibrated on the same batch that is scored (held-out calibration pending);
-"compute" = latent retrieval steps only (delta-rule write FLOPs are unaffected
-by halting); models are 0.2–0.9M params on synthetic tasks — these are
-*mechanism* pilots, not LLM-scale evidence.
+**Cross-cutting caveats** (updated): headline rows now carry 5-seed mean±std
+(seeds 5–9 for rule/reachp ablations and bakeoff; seeds 0–4 for reachp3);
+held-out tau calibration is in effect for all bake-off numbers (archived
+pre-fix logs retained); "compute" = latent retrieval steps only (delta-rule
+write FLOPs are unaffected by halting); models are 0.2–0.9M params on
+synthetic tasks — mechanism pilots, not LLM-scale evidence.
 
 ---
 
@@ -94,7 +97,9 @@ holds** (`results/reachp_run.log`):
   substantial fraction of halts are *confident-but-wrong / premature* — the
   entropy scalar reads "low, stop" on examples where more depth over the
   still-filling memory would have converted errors into hits (persist's 22→41
-  vs both's 20→27 shows the foregone gains). This is the central open problem.
+  vs both's 20→27 shows the foregone gains). **Resolved in Part 4**: the cost
+  is substantially a median-tau calibration artifact plus a signal-choice
+  error — convergence-family halting removes it.
 - Depth *increases* with K but as a step function: halt-step ≈ 2 for K≤1, then
   **jumps toward the budget for K≥2** (8.4 at K=2, 9.6–9.9 for K=3–4, pinned at
   10 for K≥5). The parsimonious reading: the base
@@ -126,6 +131,49 @@ early-right / never-confident), K-curriculum + aux next-node loss + capacity
 
 *(Figure regenerated after the labeling fix; the pre-fix artifacts
 `reachp_curve.png` / `reachp_run.log` are retained for provenance.)*
+
+## Part 4 — Halting-signal bake-off (`experiments/bakeoff.py`, `experiments/ablation_reachp3.py`)
+
+Two independent implementations, both 5 seeds, held-out tau, with
+shuffled-steps nulls / fixed-depth frontiers / per-halt failure decomposition:
+
+**(a) Weak-learner tasks** (`bakeoff.py`, seeds 5–9, original rule & reachp):
+
+| task | signal | acc | steps | verdict |
+|---|---|---|---|---|
+| rule | ent | 50.0±0.4% | 2.22 | works |
+| rule | **recon** | 50.0±0.3% | 2.30 | **≈ ent → free-signal thesis holds on memory task** |
+| rule | dstate | 50.1±0.4% | **1.85** | best |
+| reachp | ent | 34.7±0.6% | 9.66 | refuses to halt (safe but useless) |
+| reachp | recon | 31.9±0.6% | 8.42 | −2.8pp, tau fallback |
+| reachp | **dstate** | 33.8±0.6% | **6.21** | **only useful operating point** (−0.9pp at 62% compute, premature 3%) |
+
+**(b) Strong-learner task** (`ablation_reachp3.py`, seeds 0–4, reachp2 config
+where persist = 71.9%):
+
+- **conv (readout convergence): 71.9±0.3% @ 5.18 steps — halting is free**
+  (matches the persist ceiling, early-wrong 2%).
+- dstate: also at ceiling (5.91 steps).
+- entropy and recon: **−5.7pp** (early-wrong 8–9%) — confirmed losers.
+
+**Verdicts.**
+1. Part 3's "halting costs −9.6pp" is **substantially a tau-calibration
+   artifact**: median-tau forced aggressive halting; with slack-based held-out
+   tau, entropy doesn't *hurt* — it simply provides no compute-saving operating
+   point on the joint task. The signal-choice error was the bottleneck, not
+   halting per se.
+2. The literal thesis signal (reconstruction-error threshold) is **refuted as
+   a halting rule on joint tasks** (both learners, 10 seeds total) but
+   **survives on the memory-only task** (matches entropy at matched compute,
+   with zero trained machinery).
+3. The **convergence family wins everywhere** — consistent with Part 1's +0.92
+   and with the theory-side prediction that Geiping-convergence and
+   Titans-surprise unify only where the latent step approximates gradient
+   descent on the memory loss (then Δs ∝ ∇L, and "surprise gradient vanished"
+   = "state converged"). Making that identity architectural (latent step = GD
+   on the memory loss) is the constructive next step; kill criterion NOT
+   triggered — the thesis pivots from "low surprise → halt" to "surprise
+   stopped moving the state → halt".
 
 ## Negative baseline (retained)
 
