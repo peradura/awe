@@ -78,12 +78,16 @@ Uses GPU if available, else CPU (the model is ~0.75M params — CPU is fine).
 
 ## Status
 
-- [x] **Increment 1** — harness validated: accuracy rises with depth
-  (r=1 → 64%, r≥6 → 100%); `corr(K, steps-to-converge) ≈ +0.92`
-  (convergence tracks difficulty — the halting signal works).
-- [x] **Increment 2** — surprise-unified model + 4-way ablation
-  (`data.py` · `model_ttt.py` · `ablation.py`).
-- [ ] H1 / H2 frontier analysis; harder-K regime; domain transfer.
+- [x] **Increment 1** — reachability harness validated: accuracy rises with depth,
+  `corr(K, steps-to-converge) ≈ +0.92`.
+- [x] **Increment 2** — surprise-unified fast-weight model + 4-way ablation.
+- [x] **Reachability = negative result** — full-table graph makes memory redundant
+  (all configs 100%, flat amortization). Motivated the pivot below. See `RESULTS.md`.
+- [x] **Hidden-rule pilot ✅ (first positive)** — partial-observation permutation stream
+  (`data_rule.py` · `model_rule.py` · `ablation_rule.py`): **capability gap**
+  (persist 5%→81%, reset stays at chance), **amortization** (`both` compute 7.95→1.21
+  steps across the stream), **surprise = memory-miss** (`corr = −0.96`). See `RESULTS.md`.
+- [ ] Add π^k reasoning depth; scale to main-claim tasks (MQAR / in-context regression).
 
 ## Files
 
@@ -93,6 +97,8 @@ Uses GPU if available, else CPU (the model is ~0.75M params — CPU is fine).
 | `model.py` / `train_eval.py` | Increment 1 recurrent-depth reasoner |
 | `model_ttt.py` | Increment 2 surprise-unified fast-weight reasoner |
 | `ablation.py` | 4-way ablation + frontier figure |
+| `data_rule.py` / `model_rule.py` / `ablation_rule.py` | **hidden-rule pilot** (positive result) |
+| `RESULTS.md` | results writeup (hidden-rule win + reachability negative) |
 | `proposal.md` | full research proposal (motivation, gap, hypotheses, roadmap) |
 
 ## Related work
