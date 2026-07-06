@@ -1,0 +1,36 @@
+device=cuda | params=0.86M | n=16 m=8 Q=12 T=6 | curriculum kcap 1->4
+== train (curriculum + aux next-node loss) ==
+  step     1 | kcap 1 | loss 5.8503
+  step   400 | kcap 1 | loss 0.2197
+  step   800 | kcap 1 | loss 0.2265
+  step  1200 | kcap 1 | loss 0.2059
+  step  1600 | kcap 1 | loss 0.1608
+  step  2000 | kcap 1 | loss 0.2017
+  step  2400 | kcap 2 | loss 0.7904
+  step  2800 | kcap 2 | loss 0.7270
+  step  3200 | kcap 2 | loss 0.5943
+  step  3600 | kcap 2 | loss 0.5504
+  step  4000 | kcap 2 | loss 0.5840
+  step  4400 | kcap 3 | loss 0.9223
+  step  4800 | kcap 3 | loss 0.8591
+  step  5200 | kcap 3 | loss 0.7656
+  step  5600 | kcap 3 | loss 0.7426
+  step  6000 | kcap 3 | loss 0.7536
+  step  6400 | kcap 4 | loss 0.7989
+  step  6800 | kcap 4 | loss 0.8411
+  step  7200 | kcap 4 | loss 0.9219
+  step  7600 | kcap 4 | loss 0.9186
+  step  8000 | kcap 4 | loss 0.7822
+== eval (per-config tau) ==
+  fixed   | acc  43.5% | steps 6.00 | acc/q 40 44 43 45 43 43 43 43 44 45 47 42
+  +halt   | acc  28.0% | steps 1.64 | acc/q 26 28 27 30 30 27 28 26 29 29 29 27
+  persist | acc  72.2% | steps 6.00 | acc/q 40 59 68 76 77 77 79 76 79 78 79 79
+  both    | acc  44.6% | steps 3.31 | acc/q 34 36 39 45 48 47 50 44 49 47 46 48
+== depth vs K (both; answerable & correct) ==
+  K=0: halt-step 4.69 (n=1151)
+  K=1: halt-step 2.93 (n=1495)
+  K=2: halt-step 5.08 (n=602)
+  K=3: halt-step 5.85 (n=408)
+  K=4: halt-step 5.93 (n=361)
+== surprise vs miss corr = -0.331 | amortization both: 34%->48% ==
+saved figure -> results/reachp2_curve.png
