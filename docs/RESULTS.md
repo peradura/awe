@@ -103,11 +103,14 @@ holds** (`results/reachp_run.log`):
 - **Labeling artifact found and fixed (2026-07-06)**: `ans` counted only
   strictly-prior reveals while the model writes the *current* query's edges
   before retrieving, so probes solvable from current-query reveals were labeled
-  unanswerable (with legitimately low surprise). This attenuated
-  `corr(answerable, surprise)` (pre-fix: −0.23) and inflated the apparent
-  `fixed` baseline relative to true chance (1/24 ≈ 4%; sink-probes ≈ 3/24 also
-  contribute). Post-fix numbers: see `results/reachp_run_v2.log` (re-run with
-  identical seed/training; only `ans`-dependent statistics change).
+  unanswerable (with legitimately low surprise). Re-run with identical seed
+  (`results/reachp_run_v2.log`; training/accuracies reproduce exactly, only
+  `ans`-dependent statistics change): **corr moves −0.229 → −0.293**. The
+  artifact therefore explains only a small part of the weak coupling — even
+  with correct labels, entropy tracks answerability far more weakly here than
+  on hidden-rule (−0.96), which is a real property of the joint task, not a
+  measurement error. (The `fixed` baseline of 21% vs 1/24 ≈ 4% chance remains
+  explained by within-query-solvable probes + ~3/24 sink probes + sink priors.)
 
 **Diagnosis (revised)**: three confounded causes, not one — (a) base-learner
 limits on chain-following over accumulated memory, (b) the measurement artifact
@@ -118,7 +121,10 @@ halting-signal bake-off + per-example failure decomposition (early-wrong /
 early-right / never-confident), K-curriculum + aux next-node loss + capacity
 (`ablation_reachp2`) so learner and controller failures separate.
 
-![partial-obs reachability](../results/reachp_curve.png)
+![partial-obs reachability](../results/reachp_curve_v2.png)
+
+*(Figure regenerated after the labeling fix; the pre-fix artifacts
+`reachp_curve.png` / `reachp_run.log` are retained for provenance.)*
 
 ## Negative baseline (retained)
 
