@@ -111,16 +111,18 @@ def main():
     train(model, cfg, opt, device, args.steps, args.batch, rng)
 
     data = make_batch(1000, cfg, rng, device)
+    # held-out calibration batch: tau must not be tuned on the scored batch
+    calib = make_batch(256, cfg, rng, device)
     configs = {
         "fixed":   dict(persist=False, halt=False),
         "+halt":   dict(persist=False, halt=True),
         "persist": dict(persist=True,  halt=False),
         "both":    dict(persist=True,  halt=True),
     }
-    print("== eval (per-config tau) ==")
+    print("== eval (per-config tau, held-out calibration) ==")
     curves = {}
     for name, c in configs.items():
-        tau = calib_tau(model, cfg, data, c["persist"]) if c["halt"] else 1e9
+        tau = calib_tau(model, cfg, calib, c["persist"]) if c["halt"] else 1e9
         acc_q, steps_q, sur0, ansf = run_stream(model, cfg, data, tau=tau, **c)
         curves[name] = (acc_q, steps_q)
         print(f"  {name:7s} | acc {sum(acc_q)/len(acc_q)*100:5.1f}% | "

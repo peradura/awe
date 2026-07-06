@@ -113,16 +113,18 @@ def main():
     train(model, cfg, opt, device, args.steps, args.batch, rng)
 
     data = make_batch(1000, cfg, rng, device)
+    # held-out calibration batch: tau must not be tuned on the scored batch
+    calib = make_batch(256, cfg, rng, device)
     configs = {
         "fixed":   dict(persist=False, halt=False),
         "+halt":   dict(persist=False, halt=True),
         "persist": dict(persist=True,  halt=False),
         "both":    dict(persist=True,  halt=True),
     }
-    print("== eval (per-config tau) ==")
+    print("== eval (per-config tau, held-out calibration) ==")
     res = {}
     for name, c in configs.items():
-        tau = calib_tau(model, cfg, data, c["persist"]) if c["halt"] else 1e9
+        tau = calib_tau(model, cfg, calib, c["persist"]) if c["halt"] else 1e9
         r = run_stream(model, cfg, data, tau=tau, **c)
         res[name] = r
         print(f"  {name:7s} | acc {sum(r['acc_q'])/cfg.Q*100:5.1f}% | "

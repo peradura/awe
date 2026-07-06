@@ -13,6 +13,7 @@
 | 2026-07-06 | `reachp.py` 라벨링 수정 + 재실행 | `ans`가 현재 쿼리 공개분을 무시(모델은 retrieval 전에 write) → 라벨 교정 후 동일 시드 재실행 | ✅ 학습·정확도 완전 재현(loss·acc 동일), **corr −0.229 → −0.293** — 아티팩트는 약한 결합의 일부만 설명; joint 과제의 약한 신호-답변가능성 결합은 실재 → bake-off 필요성 강화 | `results/reachp_run_v2.log`, `results/reachp_curve_v2.png` |
 | 2026-07-06 | 문서 재캘리브레이션 (외부 리뷰) | 신호 인벤토리 명시(엔트로피 vs recon error), Part 3 both-vs-persist 손실 명시, UT-Memory/HRM/TRM 인용, C4 철회, 한계 섹션 추가 | — | `docs/RESULTS.md` "Signal inventory", `docs/proposal.md` 부록 |
 | 2026-07-06 | `ablation_reachp2` | 개선판: K-curriculum + aux next-node loss + d=256 | ⏳ **pending** — 실행 대기 (스크립트 완성·smoke 통과) | (예정) `results/reachp2_curve.png` |
+| 2026-07-06 | held-out tau + `bakeoff` + 러너 | ① `calib_tau`를 held-out 배치로 (rule/reachp/reachp2), ② halting-신호 bake-off 스크립트(ent/recon/rnorm/dstate/dent + shuffled 대조 + 고정깊이 frontier + 실패분해 + corr@0), ③ 다중시드 스윕·집계·공유GPU 예절 러너 | ⏳ 스크립트 완성·smoke 통과 — GPU 창 대기 (`docs/RUNBOOK.md`) | `experiments/bakeoff.py`, `scripts/{sweep.sh,aggregate.py,gpu_watch_run.sh}` |
 
 ## 메모
 - **핵심 전환점**: `ablation_amort`(negative) → 진단(그래프가 context에 있어 메모리 잉여, shortcut 없음) → `ablation_rule`(부분관측으로 메모리 필수화) = memory-knob positive. 단, 메모리가 필수인 과제에서 persist가 reset을 이기는 것은 상당 부분 과제 설계의 귀결 — 검증된 것은 하네스+배관.

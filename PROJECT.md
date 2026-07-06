@@ -125,13 +125,15 @@ Uses GPU if available, else CPU (models are ~0.2–0.9M params — CPU is fine).
 - [x] Joint stress-test (partial-obs reachability) — **negative for joint control**
   (halting costs −9.6pp); memory-only amortization holds.
 - [x] Fix Part-3 `ans` labeling artifact; re-measure corr (2026-07-06).
-- [ ] **Halting-signal bake-off** (the decisive experiment): on Parts 2–3 with
-  held-out tau and ≥5 seeds, compare — (a) shared recon-error for both knobs
-  (`ttt.py`-style, the actual thesis, never yet run on a positive task),
-  (b) Δsurprise variant, (c) Δstate / step-KL convergence, (d) entropy
-  (current), (e) random halting matched to avg steps, (f) fixed depth at
-  matched compute. Plus per-example failure decomposition of halts
-  (early-wrong / early-right / never-confident).
+- [~] **Halting-signal bake-off** (the decisive experiment) — **script ready,
+  awaiting a GPU window** (`experiments/bakeoff.py`, runner `scripts/sweep.sh`,
+  polite shared-GPU launcher `scripts/gpu_watch_run.sh`, see `docs/RUNBOOK.md`):
+  on Parts 2–3 tasks with held-out tau and ≥5 seeds, compare — (a) recon-error
+  read-decodability (the shared-signal thesis), (b) Δsurprise (`dent`),
+  (c) Δstate convergence, (d) entropy (current), (e) read-energy (`rnorm`),
+  plus shuffled-steps controls and the fixed-depth compute-matched frontier.
+  Includes per-example failure decomposition of halts (early_right / premature /
+  wrong_anyway / budget) and per-signal corr(answerable, signal@0).
 - [ ] Sharpen joint: K-curriculum + aux next-node loss + d=256 (`ablation_reachp2`)
   — base learner must solve K≥2 at fixed depth before any controller verdict.
 - [ ] Scale to externally legible tasks (MQAR / in-context regression) vs TTT

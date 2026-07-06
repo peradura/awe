@@ -146,9 +146,9 @@ See [`PROJECT.md`](PROJECT.md) for the full narrative and file roles.
 
 - **Single seed everywhere.** All headline numbers are one training run at
   `--seed 0`, no error bars. Multi-seed reruns are queued with the bake-off.
-- **tau calibrated on the eval batch.** `calib_tau` uses the same procedurally
-  generated batch that is then scored. Fix is one line (fresh calibration batch);
-  numbers should be re-reported with held-out tau.
+- **tau calibration**: fixed 2026-07-06 — `calib_tau` now uses a held-out
+  calibration batch in all experiments. The archived seed-0 logs predate the
+  fix; re-reported numbers come from the multi-seed sweep (`scripts/sweep.sh`).
 - **"3.3× less compute" counts latent retrieval steps only.** Delta-rule write
   cost is unaffected by halting; FLOPs accounting including writes is pending.
 - **`ablation_amort` used one tau across configs** (unfair to `+halt`, whose
