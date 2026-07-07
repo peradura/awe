@@ -10,8 +10,12 @@ retrieval never mutates the memory). Signals compared (low = done -> halt):
           write loss ||W k - v||^2 needs the true value v, which for the probe
           IS the answer, so it cannot be a halting signal; decodability is the
           closest label-free per-step analogue. Read verdicts accordingly.
+          (ablation_reachp3's "recon" = state-vs-read mismatch is a DIFFERENT
+          scalar — do not conflate the two when quoting.)
   rnorm   negative read energy: -||r_t||^2 (memory miss -> weak read)
   dstate  latent convergence: ||s_t - s_{t-1}||^2 (Geiping-style)
+  conv    readout convergence: sym-KL(p_t, p_{t-1}) (ablation_reachp3's winner;
+          cannot halt at t=0 by construction -> structural +1-step floor)
   dent    surprise plateau: |ent_t - ent_{t-1}| (Delta-surprise arm; cannot
           halt at t=0 by construction -> structural +1-step floor vs others)
 
@@ -35,8 +39,13 @@ premature as a fraction of early halts.
 Usage (pass --ckpt saved by the ablation run to skip re-training):
   PYTHONPATH=src python -m awe.experiments.bakeoff --task rule
   PYTHONPATH=src python -m awe.experiments.bakeoff --task reachp --ckpt results/ckpt_reachp_s0.pt
+  PYTHONPATH=src python -m awe.experiments.bakeoff --task reachp2 --seed 0 \
+      --ckpt results/ckpt_reachp2_s0.pt --json results/bakeoff_reachp2_s0.json
+      # strong learner (curriculum+aux, d=256) — the canonical run that unifies
+      # this script's protocol with ablation_reachp3's task/learner
 """
 import argparse
+import json
 import os
 import random
 
@@ -51,8 +60,9 @@ from awe.datasets import rule as rule_ds
 from awe.datasets import reachp as reachp_ds
 from awe.experiments.ablation_rule import train as train_rule
 from awe.experiments.ablation_reachp import train as train_reachp
+from awe.experiments.ablation_reachp2 import Cfg as Reachp2Cfg, train as train_reachp2
 
-SIGNALS = ["ent", "recon", "rnorm", "dstate", "dent"]
+SIGNALS = ["ent", "recon", "rnorm", "dstate", "conv", "dent"]
 
 
 def slice_q(data, q):
@@ -71,7 +81,7 @@ def stream_traces(model, cfg, data, persist=True):
     E = model.node.weight                          # (n, d)
     e2 = (E * E).sum(-1)                           # (n,)
     delta = model.new_memory(B, dev)
-    tr = {k: [] for k in ("logits", "ent", "recon", "rnorm", "dstate")}
+    tr = {k: [] for k in ("logits", "ent", "recon", "rnorm", "dstate", "conv")}
     tgt_all, ans_all = [], []
     for q in range(cfg.Q):
         bq = slice_q(data, q)
@@ -82,6 +92,7 @@ def stream_traces(model, cfg, data, persist=True):
         W = model.W_base.unsqueeze(0) + d_in
         s = model.node(bq["probe"])
         row = {k: [] for k in tr}
+        logp_prev = None
         for _ in range(T):
             r = torch.bmm(W, model.mem_ln(s).unsqueeze(-1)).squeeze(-1)
             s_new = s + model.step_mlp(torch.cat([s, r], dim=-1))
@@ -93,6 +104,13 @@ def stream_traces(model, cfg, data, persist=True):
                 ((r * r).sum(-1, keepdim=True) - 2.0 * (r @ E.t()) + e2).min(-1).values)
             row["rnorm"].append(-(r * r).sum(-1))
             row["dstate"].append(((s_new - s) ** 2).sum(-1))
+            if logp_prev is None:                  # t=0 sentinel: cannot halt
+                row["conv"].append(torch.full_like(row["ent"][-1], 1e9))
+            else:
+                p, p_prev = logp.exp(), logp_prev.exp()
+                row["conv"].append((p * (logp - logp_prev)).sum(-1)
+                                   + (p_prev * (logp_prev - logp)).sum(-1))
+            logp_prev = logp
             s = s_new
         for k in tr:
             tr[k].append(torch.stack(row[k], 1))
@@ -129,7 +147,7 @@ def choose_tau(tr_calib, sig, slack_pp):
     nohalt = (tr_calib["preds"][:, -1] == tr_calib["target"]).float().mean().item()
     vals = tr_calib[sig].flatten().float()
     vals = vals[vals < 1e8]                        # drop the t=0 sentinel (dent)
-    cands = torch.quantile(vals, torch.linspace(0.02, 0.98, 25)).tolist()
+    cands = torch.quantile(vals, torch.linspace(0.02, 0.98, 25, device=vals.device)).tolist()
     best = None
     for tau in cands:
         acc, steps, _, _ = apply_halt(tr_calib, sig, tau)
@@ -183,17 +201,19 @@ def shuffled_acc(tr, hs, g, within_block, reps=5):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--task", choices=["rule", "reachp"], required=True)
+    ap.add_argument("--task", choices=["rule", "reachp", "reachp2"], required=True)
     ap.add_argument("--steps", type=int, default=0,
-                    help="0 = task default (rule 3000 / reachp 4000, matching the ablations)")
+                    help="0 = task default (rule 3000 / reachp 4000 / reachp2 8000, matching the ablations)")
     ap.add_argument("--ckpt", type=str, default="",
                     help="load model state if the file exists (skip training), else train and save here")
     ap.add_argument("--batch", type=int, default=64)
-    ap.add_argument("--d", type=int, default=128)
+    ap.add_argument("--d", type=int, default=0,
+                    help="0 = task default (rule/reachp 128, reachp2 256)")
     ap.add_argument("--lr", type=float, default=3e-4)
     ap.add_argument("--slack", type=float, default=1.0, help="acc slack (pp) for tau pick")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--fig", type=str, default="")
+    ap.add_argument("--json", type=str, default="", help="write per-seed results JSON here")
     args = ap.parse_args()
 
     torch.manual_seed(args.seed)
@@ -201,10 +221,15 @@ def main():
     device = "cuda" if torch.cuda.is_available() else "cpu"
     if args.task == "rule":
         cfg, make_batch, train = rule_ds.RuleConfig(), rule_ds.make_batch, train_rule
-    else:
+    elif args.task == "reachp":
         cfg, make_batch, train = reachp_ds.ReachPConfig(), reachp_ds.make_batch, train_reachp
+    else:                                          # reachp2 = strong learner (curriculum + aux)
+        cfg, make_batch = Reachp2Cfg(), reachp_ds.make_batch
+        train = lambda m, c, o, dv, st, b, r: train_reachp2(m, c, o, dv, st, b, r, lam_aux=1.0)
     if args.steps <= 0:
-        args.steps = 3000 if args.task == "rule" else 4000
+        args.steps = {"rule": 3000, "reachp": 4000, "reachp2": 8000}[args.task]
+    if args.d <= 0:
+        args.d = 256 if args.task == "reachp2" else 128
     model = RuleReasoner(cfg.n, d=args.d).to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=0.01)
     npar = sum(p.numel() for p in model.parameters())
@@ -220,6 +245,8 @@ def main():
             torch.save(model.state_dict(), args.ckpt)
             print(f"saved ckpt -> {args.ckpt}")
 
+    if args.task == "reachp2":
+        cfg.kcap = 4                               # eval at full difficulty (curriculum may be skipped via ckpt)
     data = make_batch(1000, cfg, rng, device)
     calib = make_batch(256, cfg, rng, device)      # held-out: tau never sees `data`
     tr = stream_traces(model, cfg, data, persist=True)
@@ -238,20 +265,34 @@ def main():
     print(f"  {'signal':7s} {'tau':>9s} {'acc':>6s} {'steps':>6s} {'shuf_g':>7s} {'shuf_b':>7s} "
           f"{'corr':>7s}  er/pm/wa/fd  pm|halt  tau_ok")
     results = {}
+    out_json = {"task": args.task, "seed": args.seed, "d": args.d,
+                "nohalt_acc": nohalt_acc,
+                "fixed_frontier": [
+                    (tr["preds"][:, t] == tr["target"]).float().mean().item()
+                    for t in range(T)],
+                "arms": {}}
     for sig in SIGNALS:
         tau, ok, cands = choose_tau(tc, sig, args.slack)
         acc, steps, hs, has = apply_halt(tr, sig, tau)
         sg = shuffled_acc(tr, hs, g, within_block=False)
         sb = shuffled_acc(tr, hs, g, within_block=True)
-        col = 1 if sig == "dent" else 0            # dent@0 is the sentinel
+        col = 1 if sig in ("dent", "conv") else 0  # t=0 is the sentinel for these
         c = torch.corrcoef(torch.stack([tr["ans"], tr[sig][:, col].float()]))[0, 1].item()
         d = decompose(tr, hs, has)
         curve = [apply_halt(tr, sig, t)[:2] for t in cands]   # full tau-sweep on eval
         results[sig] = (acc, steps, curve)
+        out_json["arms"][sig] = {
+            "tau": tau, "tau_ok": ok, "acc": acc, "steps": steps,
+            "shuf_g": sg, "shuf_b": sb, "corr_ans": c,
+            "decomposition": d, "curve": curve}
         print(f"  {sig:7s} {tau:9.4f} {acc*100:5.1f}% {steps:6.2f} {sg*100:6.1f}% {sb*100:6.1f}% "
               f"{c:+7.3f}  {d['early_right']:.2f}/{d['premature']:.2f}/"
               f"{d['wrong_anyway']:.2f}/{d['full_depth']:.2f}  {d['prem_per_halt']:7.2f}  "
               f"{'y' if ok else 'FALLBACK'}")
+    if args.json:
+        with open(args.json, "w") as f:
+            json.dump(out_json, f, indent=1)
+        print(f"saved -> {args.json}")
     print("== tau-sweep on eval per signal (steps:acc%) — read matched-compute comparisons "
           "(PROJECT.md §7 kill criterion) off these curves, not the single points ==")
     for sig, (_, _, curve) in results.items():

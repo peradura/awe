@@ -146,9 +146,13 @@ Experiment log → [`docs/exp_logs/LOG.md`](docs/exp_logs/LOG.md).**
   *discriminating winner* when the task has depth structure (multi-hop: conv/dstate
   beat entropy/recon **+2.5pp, 10/10 seeds**, at half the compute). reachp's finding
   generalizes. See `docs/mqar_design.md`.
-- [ ] **Next**: canonical bake-off (`bakeoff.py` + `conv`, strong learner, 10 seeds
-  — settles whether 4a's bimodality caveat is a tau-rule artifact); write-magnitude
-  probe; raise the multi-hop base learner + anchor vs a published baseline
+- [x] **Canonical bake-off (`bakeoff.py --task reachp2` + `conv`, 10 seeds) ✅** —
+  4a's bimodality caveat **was** a tau-rule artifact and dissolves: conv saves ~35%
+  compute uniformly (3.89±0.09/6 steps, 10/10 seeds, ≤1pp cost); only conv/dstate
+  admit a within-slack operating point (10/10 vs 0/10 for the rest). This is the
+  canonical joint-task table (`docs/RESULTS.md` Part 4c).
+- [ ] **Next**: write-magnitude probe (the non-tautological unification test);
+  raise the multi-hop MQAR base learner + anchor vs a published baseline
   (Based 2402.18668 / DeltaNet 2406.06484, Zoology harness).
 
 ## Layout

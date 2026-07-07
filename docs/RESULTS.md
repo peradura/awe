@@ -10,18 +10,26 @@
 > 2–6pp — and on the *external* multi-hop task it does so at **less than half the
 > compute on 10/10 seeds**.
 >
+> The compute saving is now **established, not caveated**: the canonical run
+> (Part 4c — the rigorous protocol on the strong learner) shows `conv` reaching
+> within 1pp of the ceiling at **3.89±0.09 / 6 steps (~35% saved), uniformly on
+> 10/10 seeds** — the earlier "bimodal / conservative" caveat was an artifact of
+> the argmax-accuracy tau rule and dissolves under the correct
+> fewest-steps-within-slack objective. The discrimination is binary there:
+> **only the convergence family admits a within-slack operating point at all**
+> (conv/dstate 10/10; entropy/recon/rnorm/Δ-entropy 0/10).
+>
 > **What is *not* supported is the stronger "one surprise scalar drives both
 > knobs"**: the compute-efficient halter (`conv`) is a pure readout statistic with
-> no write-side role; the literal thesis scalar (`recon`, state-mismatch form)
-> *loses* at depth-halting on every joint task; and the compute-saving of the
-> ‖Δs‖² halter on reachp is partly a **tau-selection artifact**, not an
-> established property (Part 4a †). Depth wants a convergence observable, the
-> write wants a reconstruction-miss observable; the "two gradients of one memory
-> loss" unification remains an **untested interpretation** — it becomes a finding
-> only if the halt signal is shown to predict the write magnitude (the probe in
-> `docs/mqar_design.md`). One counterweight from Part 4b: on the *memory-only*
-> task a reconstruction-family scalar (decodability form) matches entropy at
-> matched compute — recon-halting fails on *joint* tasks, not everywhere.
+> no write-side role, and the literal thesis scalar (`recon`, state-mismatch form)
+> *loses* at depth-halting on every joint task. Depth wants a convergence
+> observable, the write wants a reconstruction-miss observable; the "two gradients
+> of one memory loss" unification remains an **untested interpretation** — it
+> becomes a finding only if the halt signal is shown to predict the write
+> magnitude (the probe in `docs/mqar_design.md`). One counterweight from Part 4b:
+> on the *memory-only* task a reconstruction-family scalar (decodability form)
+> matches entropy at matched compute — recon-halting fails on *joint* tasks, not
+> everywhere.
 
 The evidence chain:
 
@@ -32,6 +40,7 @@ The evidence chain:
 | 3 | joint, *entropy* halt (historical) | partial-obs reachability | entropy halting costs accuracy | 🟡 superseded by Part 4 |
 | 4a | joint halting is **accuracy-preserving** with a convergence signal | partial-obs reachability (strong learner), **10-seed** bake-off | conv/dstate −0.0pp vs persist 72.0±0.6%; entropy/recon −5.6pp | ✅ |
 | 4b | independent bake-off converges (weak learners, stronger nulls) | rule + original reachp, 10 seeds | reachp: dstate the only useful operating point; rule: recon(decodability) ≈ entropy | ✅ |
+| 4c | **canonical**: rigorous protocol × strong learner; bimodality dissolves | reachp2 via `bakeoff.py`+conv, 10 seeds | conv 71.2±0.5% @ **3.89±0.09** steps (uniform); only conv/dstate admit a within-slack tau (10/10 vs 0/10) | ✅ |
 | 5 | convergence-halting **transfers externally** | MQAR single- & multi-hop, 10 seeds each | multi-hop: conv/dstate beat entropy/recon **+2.5pp on 10/10 seeds** at 2.5 vs 5.4 steps | ✅ |
 
 **Cross-cutting caveats**: "compute" = latent retrieval steps only (delta-rule
@@ -154,8 +163,9 @@ but convergence signals do not.
 > (curriculum-fixed 72% vs original weak learners), **tau-selection objective**
 > (4a: argmax calibration-accuracy; 4b: fewest steps within an accuracy slack),
 > and **`recon` definition** (4a: state-vs-read mismatch ‖n(sₜ₊₁)−n(rₜ)‖²; 4b:
-> vocab-decodability min_v‖rₜ−node(v)‖²). Quote them separately. A canonical run
-> (4b's method + `conv`, strong learner) is queued to unify them.
+> vocab-decodability min_v‖rₜ−node(v)‖²). Quote them separately.
+> **Part 4c below unifies them** (4b's protocol + `conv`, strong learner) and is
+> the **canonical** table to quote; 4a/4b are retained as history/robustness.
 
 ### Part 4a — strong learner (`experiments/ablation_reachp3.py`, 10 seeds)
 
@@ -173,19 +183,15 @@ by a different script on an independent eval draw; the 0.1pp is sampling noise.)
 | `entropy` (status quo) | 66.4±0.9% | 5.44 | −5.6pp | 8.5% | −0.45 |
 | `recon` = ‖n(sₜ₊₁)−n(rₜ)‖² | 66.3±0.7% | 5.39 | −5.6pp | 8.8% | −0.25 |
 
-† conv's step count is **bimodal across seeds** (std 0.58 vs dstate's 0.07): on
-**7/10** seeds it genuinely saves compute (~4.6 steps, ~46% correct early exits);
-on **3/10** it collapses to dstate-like conservatism (~5.9 steps, no saving).
-**Attribution (2026-07-07)**: this bimodality — and dstate's 5.93/6
-"barely-halts" conservatism — is **substantially an artifact of this script's
-tau rule** (`tau = argmax` calibration *accuracy*, ignoring steps: on a near-flat
-acc-vs-tau curve the operating point lands anywhere, including the conservative
-end). Part 4b's rule (fewest steps within an accuracy *slack*) is the right
-objective for a compute-saving claim and would likely take the low-step end of
-the same flat curve; the queued canonical run settles this. Until then:
-**accuracy (−0.0pp) is robust across all 10 seeds; the compute-saving size is
-tau-rule-dependent.** (corr(ans, sig₀) for conv is measured at step 1 — no
-finite step 0.)
+† conv's step count is **bimodal across seeds** here (std 0.58 vs dstate's 0.07):
+7/10 seeds save compute (~4.6 steps), 3/10 collapse to ~5.9. **Resolved
+(2026-07-07, Part 4c)**: this bimodality — and dstate's "barely-halts"
+conservatism — was **an artifact of this script's tau rule** (`tau = argmax`
+calibration *accuracy*, ignoring steps: on a near-flat acc-vs-tau curve the
+operating point lands anywhere). Under Part 4c's fewest-steps-within-slack
+objective on the *same* task/learner class, conv is a **uniform** saver
+(3.89±0.09 steps, 10/10 seeds) and dstate also actually halts (5.12±0.15).
+(corr(ans, sig₀) for conv is measured at step 1 — no finite step 0.)
 
 **Read carefully — the result is real but narrow:**
 
@@ -245,6 +251,37 @@ tau, entropy doesn't *hurt*, it just provides no compute-saving operating point.
 Note again: 4b's `recon` (decodability) is a **different scalar** from 4a's
 (state-mismatch); "recon survives on rule / loses on joint" is a statement about
 two definitions, not one signal behaving inconsistently.
+
+### Part 4c — canonical run (`bakeoff.py --task reachp2` + `conv`, 10 seeds)
+
+The unifying run: 4b's rigorous protocol (slack-based held-out tau, within-block
+shuffle null, tau-sweep curves, ckpt reuse) with `conv` added to its signal set,
+on 4a's **strong learner** (reachp2 curriculum + aux, d=256, per-seed retrained,
+kcap=4 eval). No-halt ceiling **71.9±0.5%**; slack = 1.0pp.
+
+| signal | acc | steps | within-slack tau exists? | premature/halt | shuf_b null |
+|---|---|---|---|---|---|
+| `conv` | **71.2±0.5%** | **3.89±0.09** | ✅ 10/10 | 0.02 | 63.8% (+7.4pp real info) |
+| `dstate` | 71.0±0.6% | 5.12±0.15 | ✅ 10/10 | 0.05 | 68.7% |
+| `dent` (Δ-entropy) | 68.8±0.5% | 5.70 | ❌ 0/10 FALLBACK | 0.38 | 70.1% |
+| `rnorm` | 68.2±0.6% | 5.57 | ❌ 0/10 | 0.39 | 68.6% |
+| `recon` (decodability) | 67.1±0.5% | 5.45 | ❌ 0/10 | 0.44 | 67.5% |
+| `ent` | 66.2±0.5% | 5.43 | ❌ 0/10 | 0.50 | 67.1% |
+
+- **The 4a caveats dissolve.** conv's per-seed steps are [3.84–4.07] — perfectly
+  uniform (no bimodality), a **~35% compute saving at ≤1pp accuracy cost on every
+  seed**. dstate's conservatism also relaxes (5.93 → 5.12). Both were artifacts
+  of 4a's argmax-accuracy tau rule.
+- **The discrimination becomes binary.** Only the convergence family *admits* a
+  within-slack operating point (conv/dstate: `tau_ok` 10/10). All four
+  non-convergence signals fail to find any tau within 1pp of the ceiling (0/10,
+  falling back to max-accuracy and still losing 3–6pp). Premature-halt fraction:
+  conv 0.02 vs ent 0.50.
+- **Above the null.** conv beats the within-block shuffle null by +7.4pp — its
+  halting decisions carry genuine per-example information, not a per-position
+  schedule.
+- This is now the **canonical joint-task bake-off**; `ablation_reachp3` (4a) is
+  retired to history. Artifacts: `results/bakeoff_reachp2_s{0..9}.{json,log}`.
 
 ## Part 5 — External transfer: MQAR (10 seeds each; full details `docs/mqar_design.md`)
 

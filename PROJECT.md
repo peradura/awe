@@ -83,13 +83,14 @@ See `docs/proposal.md`.
 > writes. The 10-seed bake-off shows the earlier "joint halting costs accuracy"
 > was **not inevitable for every stopping rule**: entropy/recon halting cost −5.6pp
 > (confident-wrong early exits), but convergence signals preserve accuracy (−0.0pp
-> vs persist 72.0±0.6%). **Two honesty caveats**: `dstate` preserves accuracy
-> largely by being *conservative* (5.93/6 steps), and `conv`'s compute saving is
-> seed-bimodal (7/10) under this script's tau rule — both caveats are
-> **substantially artifacts of the argmax-accuracy tau objective** (Part 4b's
-> slack rule is the right one for compute claims; canonical run queued) — and
-> `conv` is **not** the memory-gradient / write signal. On the external multi-hop
-> task (Part 5) the saving is robust: 2.5/6 steps on 10/10 seeds.
+> vs persist 72.0±0.6%). The earlier bimodality/conservatism caveats were
+> **artifacts of the argmax-accuracy tau rule and are resolved by the canonical
+> run (Part 4c)**: under the fewest-steps-within-slack objective, `conv` saves
+> ~35% compute **uniformly** (3.89±0.09/6 steps, 10/10 seeds, ≤1pp cost), and
+> only the convergence family admits a within-slack operating point at all
+> (conv/dstate 10/10 vs 0/10 for entropy/recon/rnorm/Δ-entropy). `conv` remains
+> **not** the memory-gradient / write signal. On the external multi-hop task
+> (Part 5) the saving also holds: 2.5/6 steps on 10/10 seeds.
 > So the *strong* thesis (one scalar drives both knobs) is dead; the plainer
 > honest reading is that **depth and write want different observables**
 > (convergence for depth, reconstruction-miss for write). A *weak, interpretive*
@@ -107,14 +108,13 @@ everywhere as of 2026-07-07):
 | 3 | joint, *entropy* halt (historical) | partial-obs reachability | amortization holds w/o halting; entropy halting costs accuracy | 🟡 superseded by Part 4 |
 | 4a | joint halting **accuracy-preserving** w/ convergence signal | partial-obs reachability (strong learner), **10-seed** bake-off | conv/dstate −0.0pp vs persist 72.0±0.6%; entropy/recon −5.6pp | ✅ |
 | 4b | independent bake-off converges (weak learners, stronger nulls, `bakeoff.py`) | rule + original reachp, 10 seeds | reachp: dstate only useful operating point; rule: recon(decodability) ≈ entropy | ✅ |
+| 4c | **canonical** (4b protocol + conv × strong learner) — bimodality dissolves | reachp2 via `bakeoff.py`, 10 seeds | conv 71.2±0.5% @ **3.89±0.09** steps, uniform; within-slack tau exists only for conv/dstate (10/10 vs 0/10) | ✅ |
 | 5 | convergence-halting **transfers externally** | MQAR single- & multi-hop, 10 seeds each | multi-hop: conv/dstate beat entropy/recon **+2.5pp, 10/10 seeds**, at 2.5 vs 5.4 steps | ✅ |
 
 **Caution when quoting Part 4**: 4a and 4b differ in tau-selection objective
 (argmax-accuracy vs fewest-steps-within-slack) and in the `recon` definition
-(state-mismatch vs decodability) — they corroborate each other but are **not one
-table**. 4a's conv-bimodality / dstate-conservatism caveat is substantially a
-tau-rule artifact (see `docs/RESULTS.md` Part 4a †); a canonical unified run is
-queued. A Part-3 `ans`-labeling artifact was fixed 2026-07-06.
+(state-mismatch vs decodability) — **quote 4c (canonical)**; 4a/4b are
+history/robustness. A Part-3 `ans`-labeling artifact was fixed 2026-07-06.
 
 Full numbers + figures: **`docs/RESULTS.md`**. Experiment history: **`docs/exp_logs/LOG.md`**.
 
@@ -185,12 +185,12 @@ Uses GPU if available, else CPU (models are ~0.2–0.9M params — CPU is fine).
   (entropy/recon here drift to budget rather than halt confident-wrong-early), same
   conclusion. See `docs/mqar_design.md`. Caveat: 41.6% base-learner ceiling on
   multi-hop chains — a mechanism-scale result.
-- [ ] **Canonical bake-off** (next, high leverage): add `conv` to `bakeoff.py`'s
-  signal set and run it on the **strong reachp2 learner** (ckpt reuse, 10 seeds)
-  and on MQAR — one rigorous 6-signal bake-off (slack-tau, within-block null,
-  tau-sweep curves) across weak/strong/external. Settles whether 4a's
-  conv-bimodality / dstate-conservatism dissolve under the correct tau objective,
-  and retires `ablation_reachp3`.
+- [x] **Canonical bake-off** (`bakeoff.py --task reachp2` + `conv`, 10 seeds,
+  2026-07-07): **4a's caveats dissolve** — conv saves ~35% uniformly (3.89±0.09
+  steps, 10/10), dstate 5.12±0.15; only conv/dstate admit a within-slack tau
+  (10/10 vs 0/10 for ent/recon/rnorm/dent); conv +7.4pp above the within-block
+  null. `ablation_reachp3` retired to history. (Remaining optional: same protocol
+  on MQAR.)
 - [ ] **Write-magnitude probe** (the only non-tautological unification test):
   per example, does the halting signal at halt-step predict the delta-rule write
   magnitude ‖Δdelta‖ and the subsequent memory-loss decrease? Negative outcome =
