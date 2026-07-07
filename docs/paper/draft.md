@@ -352,8 +352,8 @@ test-time-adaptive models.
 | # | content | source |
 |---|---|---|
 | Fig 1 | tau-sweep curves + frontier + operating points, 6 signals (canonical) | ✅ `results/fig1_bakeoff_band.{png,pdf}` via `scripts/fig1_bakeoff_band.py` |
-| Fig 2 | failure decomposition stacked bars, per signal (canonical 4c) | bakeoff_reachp2_s*.json `decomposition`; 4a version → App B |
-| Fig 3 | MQAR multi-hop: acc-vs-steps + depth∝H | mqarhop_seed*.json |
+| Fig 2 | failure decomposition stacked bars, per signal (canonical 4c) | ✅ `results/fig2_decomposition.{png,pdf}` via `scripts/fig2_decomposition.py` |
+| Fig 3 | MQAR multi-hop: acc-vs-steps + depth∝H | ✅ `results/fig3_mqarhop.{png,pdf}` via `scripts/fig3_mqarhop.py` |
 | Tab 1 | canonical bake-off (acc, steps, tau_ok, premature, null) | RESULTS Part 4c |
 | Tab 2 | external transfer summary | RESULTS Part 5 |
 | App A | signal inventory + two recon definitions | ✅ ported to latex/main.tex |

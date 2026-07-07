@@ -301,7 +301,19 @@ halt fires on an example that had not yet resolved. \sig{dstate} is the
 
 \subsection{Why surprise fails: failure decomposition}\label{sec:failure}
 
-The canonical run's own per-example decomposition names the failure. Under each
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.82\linewidth]{fig2_decomposition.pdf}
+\caption{Per-example failure decomposition under each signal's calibrated
+$\tau$ (canonical bake-off, 10-seed means). \sig{conv} halts early
+\emph{and right} on 66\% of examples with only 2\% premature; the four
+magnitude-family signals barely halt at all (88--91\% full depth), and when
+they do, roughly half of their halts are premature (Table~\ref{tab:bakeoff}).}
+\label{fig:decomp}
+\end{figure}
+
+The canonical run's own per-example decomposition names the failure
+(Figure~\ref{fig:decomp}). Under each
 signal's calibrated $\tau$, \textbf{premature halts} --- halted early and
 answered wrong where the full-depth rollout answers right --- hit $5.9\pm0.3\%$
 of examples for \sig{ent} and $5.0\pm0.2\%$ for \sig{recon} (decodability),
@@ -329,7 +341,19 @@ The discrimination reproduces on an external task. On \textbf{multi-hop MQAR}
 ($H$-hop recall, $H\in1..3$; persist ceiling $41.6\pm0.9\%$), convergence beats
 magnitude at \textbf{less than half the compute} ($2.5$ vs $5.4$ steps),
 winning on \textbf{all 10 seeds} --- conv$-$entropy $= +2.76\pm0.35$pp,
-conv$-$recon $= +2.32\pm0.33$pp (both 10/10); see Table~\ref{tab:mqar}.
+conv$-$recon $= +2.32\pm0.33$pp (both 10/10); see Table~\ref{tab:mqar} and
+Figure~\ref{fig:mqar}.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.98\linewidth]{fig3_mqarhop.pdf}
+\caption{External transfer (multi-hop MQAR, 10 seeds). (a) \sig{conv}/\sig{dstate}
+reach the persist ceiling at ${\sim}2.5$ steps; the entropy/recon $\tau$-sweeps
+never reach it --- they \emph{drift to the budget} past the depth-3 accuracy
+peak (their operating points sit at $5.4$ steps, $2$--$3$pp below). (b) The
+halting depth grades with hop count.}
+\label{fig:mqar}
+\end{figure}
 
 \begin{table}[t]
 \caption{Multi-hop MQAR transfer (10 seeds; persist ceiling $41.6\pm0.9\%$).}
