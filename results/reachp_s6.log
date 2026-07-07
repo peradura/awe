@@ -1,0 +1,35 @@
+device=cpu | params=0.22M | n=24 m=5 Q=12 T=10 kcap=8
+== train (memory persists across the stream) ==
+  step     1 | loss 3.3137
+  step   300 | loss 2.7878
+  step   600 | loss 2.6968
+  step   900 | loss 2.6496
+  step  1200 | loss 2.5203
+  step  1500 | loss 2.4496
+  step  1800 | loss 2.4931
+  step  2100 | loss 2.3287
+  step  2400 | loss 2.3654
+  step  2700 | loss 2.3313
+  step  3000 | loss 2.3290
+  step  3300 | loss 2.2774
+  step  3600 | loss 2.1832
+  step  3900 | loss 2.2306
+saved ckpt -> results/ckpt_reachp_s6.pt
+== eval (per-config tau, held-out calibration) ==
+  fixed   | acc  21.4% | steps 10.00 | acc/q 20 22 22 22 23 21 20 21 22 20 24 21
+  +halt   | acc  16.6% | steps 3.03 | acc/q 16 18 16 16 17 17 16 19 17 16 17 16
+  persist | acc  35.7% | steps 10.00 | acc/q 20 28 32 35 39 39 38 39 39 38 42 38
+  both    | acc  25.7% | steps 5.38 | acc/q 20 23 24 25 25 26 27 29 28 27 27 28
+== depth vs difficulty K (both; answerable & correct) ==
+  K=0: halt-step 1.86  (n=927)
+  K=1: halt-step 2.32  (n=536)
+  K=2: halt-step 9.05  (n=65)
+  K=3: halt-step 9.66  (n=58)
+  K=4: halt-step 10.00  (n=45)
+  K=5: halt-step 10.00  (n=36)
+  K=6: halt-step 10.00  (n=26)
+  K=7: halt-step 10.00  (n=24)
+  K=8: halt-step 10.00  (n=23)
+== surprise vs miss: corr(answerable, surprise) = -0.311 ==
+== amortization (both): acc q0=20% -> q11=28% ==
+saved figure -> results/reachp_s6.png

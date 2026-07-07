@@ -1,0 +1,24 @@
+device=cpu | params=0.22M | n=20 m=3 Q=10 T=8
+== train (memory persists across the stream) ==
+  step     1 | loss 3.1807
+  step   300 | loss 1.6504
+  step   600 | loss 1.4931
+  step   900 | loss 1.4502
+  step  1200 | loss 1.4822
+  step  1500 | loss 1.4530
+  step  1800 | loss 1.3204
+  step  2100 | loss 1.4535
+  step  2400 | loss 1.4188
+  step  2700 | loss 1.3621
+  step  3000 | loss 1.4581
+saved ckpt -> results/ckpt_rule_s5.pt
+== eval (per-config tau, held-out calibration) ==
+  fixed   | acc   5.6% | steps 8.00 | acc/q 6 6 5 5 5 5 5 6 8 6
+  +halt   | acc   5.0% | steps 1.51 | acc/q 5 4 5 5 6 5 5 5 5 5
+  persist | acc  51.0% | steps 8.00 | acc/q 6 20 31 43 51 61 67 74 76 81
+  both    | acc  50.4% | steps 2.39 | acc/q 6 19 31 44 51 60 66 73 75 80
+== headline (both) ==
+  accuracy: q0=6% -> q9=80%  (Δ +74pp)
+  steps   : q0=7.92  -> q9=1.21   (Δ -6.71)
+  corr(answerable, surprise@0) = -0.965  (expect negative: seen->low surprise)
+saved figure -> results/rule_s5.png

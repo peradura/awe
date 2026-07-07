@@ -23,7 +23,7 @@ and **how much Weight to adapt** (TTT) — hence *Adaptive Weight & Exit*.
 > (`conv`), which has no write role. Honest reading: **depth and write want
 > different observables**; "one signal, two knobs" is at best a cautious, untested
 > interpretation. Next: does convergence-halting transfer to an external task
-> (MQAR)? See [`docs/RESULTS.md`](docs/RESULTS.md) §"Part 3-B", `PROJECT.md` §4/§7,
+> (MQAR)? See [`docs/RESULTS.md`](docs/RESULTS.md) §"Part 4", `PROJECT.md` §4/§7,
 > and [`docs/mqar_design.md`](docs/mqar_design.md).
 
 ---
@@ -92,7 +92,7 @@ partially: a convergence signal halts earlier at matched accuracy (`conv` ~4.6 v
 6.0 steps, −0.0pp) **on 7/10 seeds** (bimodal — no saving on 3/10); **H2** — the
 accuracy/compute frontier depends on the halting
 signal (entropy/recon −5.6pp, conv/dstate −0.0pp). See `docs/RESULTS.md`
-§"Part 3-B".)*
+§"Part 4".)*
 
 ## Quickstart
 
@@ -133,38 +133,47 @@ Experiment log → [`docs/exp_logs/LOG.md`](docs/exp_logs/LOG.md).**
 - [x] **Sharpen joint (`ablation_reachp2`, 10 seeds)** — K-curriculum + aux next-node
   loss + d=256: persist **72.1±0.6%** (reset 43.3% → persist), isolating the halting
   signal as the bottleneck; multi-seed amortization / depth∝K figures with error bars.
-- [x] **Halting-signal bake-off (`ablation_reachp3`, 10 seeds, held-out tau) ✅ verdict**
-  — entropy/recon lose −5.6pp (early-wrong 8–9%); `conv`/`dstate` cost-free (−0.0pp
-  vs persist 72.0±0.6%). The literal recon-scalar thesis **fails at halting**; the weak
-  convergence unification survives. Per-example failure decomposition included.
+- [x] **Halting-signal bake-off ×2 (10 seeds each) ✅ verdict** — (4a) strong
+  learner, `ablation_reachp3`: entropy/recon lose −5.6pp (early-wrong 8–9%),
+  `conv`/`dstate` −0.0pp vs persist 72.0±0.6%; (4b) independent implementation on
+  the weak learners with stronger nulls + tau-sweep curves, `bakeoff.py`: dstate
+  the only useful joint operating point, and recon(decodability) ≈ entropy on the
+  memory-only task. The literal recon-scalar thesis **fails at halting on joint
+  tasks**. ⚠️ 4a/4b use different tau rules + recon definitions — see
+  `docs/RESULTS.md` Part 4.
 - [x] **External task — MQAR (2026-07-07, 10 seeds each)**: convergence-halting
   *transfers* (single-hop: `conv` matches ceiling at 2.5/6 steps) and is the
   *discriminating winner* when the task has depth structure (multi-hop: conv/dstate
   beat entropy/recon **+2.5pp, 10/10 seeds**, at half the compute). reachp's finding
   generalizes. See `docs/mqar_design.md`.
-- [ ] **Next**: raise the multi-hop base learner (curriculum) + anchor vs a published
-  baseline (Based 2402.18668 / DeltaNet 2406.06484, Zoology harness).
+- [ ] **Next**: canonical bake-off (`bakeoff.py` + `conv`, strong learner, 10 seeds
+  — settles whether 4a's bimodality caveat is a tau-rule artifact); write-magnitude
+  probe; raise the multi-hop base learner + anchor vs a published baseline
+  (Based 2402.18668 / DeltaNet 2406.06484, Zoology harness).
 
 ## Layout
 
 ```
 src/awe/
-├── datasets/   reachability.py · amort.py · rule.py · reachp.py   (task generators)
-├── models/     recurrent.py · ttt.py · amort.py · memory.py       (reasoners)
-└── experiments/ depth_sanity · ablation_{ttt,amort,rule,reachp,reachp2,reachp3}
-docs/   proposal.md · RESULTS.md · REVIEW.md · exp_logs/LOG.md
+├── datasets/   reachability · amort · rule · reachp · mqar · mqar_hop  (task generators)
+├── models/     recurrent.py · ttt.py · amort.py · memory.py            (reasoners)
+└── experiments/ depth_sanity · ablation_{ttt,amort,rule,reachp,reachp2,reachp3,mqar,mqar_hop} · bakeoff.py
+scripts/  sweep.sh · aggregate.py · gpu_watch_run.sh  (multi-seed + polite shared-GPU runner)
+docs/   proposal.md · RESULTS.md · mqar_design.md · REVIEW.md · RUNBOOK.md · exp_logs/LOG.md
 results/  figures + run logs
 ```
 See [`PROJECT.md`](PROJECT.md) for the full narrative and file roles.
 
-## Known limitations (as of 2026-07-06)
+## Known limitations (as of 2026-07-07)
 
-- **Seeds differ by result.** The **bake-off (Part 3-B) and reachp2 amortization
-  are 10 seeds** with error bars; Parts 1–2 (depth sanity, hidden-rule) are still
-  single-seed (`--seed 0`) — multi-seed reruns pending.
-- **tau: held-out for the bake-off, eval-batch for the rest.** `ablation_reachp3`
-  calibrates `tau` on a held-out batch (leakage fixed); the older `calib_tau` path
-  (Parts 1–2 and the reachp2 configs) still calibrates on the scored batch.
+- **Seeds differ by result.** The bake-offs (Part 4a/4b), reachp2, rule, and both
+  MQAR runs are **10 seeds** with error bars; Part 1 (depth sanity) is still
+  single-seed (`--seed 0`) — rerun pending.
+- **tau calibration**: held-out everywhere as of 2026-07-07 — `bakeoff.py` and
+  `ablation_reachp3` always were; `calib_tau` in the rule/reachp/reachp2 ablations
+  now uses a held-out batch (archived seed-0 logs predate the fix; a held-out rerun
+  reproduced the reachp2 numbers). Note 4a and 4b use **different tau objectives**
+  (argmax-accuracy vs fewest-steps-within-slack) — don't merge their tables.
 - **"3.3× less compute" counts latent retrieval steps only.** Delta-rule write
   cost is unaffected by halting; FLOPs accounting including writes is pending.
 - **`ablation_amort` used one tau across configs** (unfair to `+halt`, whose

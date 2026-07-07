@@ -142,6 +142,6 @@ answer = decode(z, W)               # 마지막에만 단어로
    오차가 추론 정착과 시냅스 갱신을 모두 구동"은 이 전통의 아이디어이며, 소유하면
    강점이고 숨기면 약점.
 3. **§6 대비 실제 실행 규모**: 1B 모델·GSM8K·H2 frontier는 미착수. 현재 증거는
-   0.2–0.9M 파라미터 합성 과제의 메커니즘 파일럿. 위생: **bake-off(Part 3-B)·reachp2는
+   0.2–0.9M 파라미터 합성 과제의 메커니즘 파일럿. 위생: **bake-off(Part 4)·reachp2는
    10 seeds + held-out tau로 해소**, Parts 1–2는 여전히 단일 시드·eval-batch tau(잔여).
    다음은 외부 legible 과제(MQAR)로의 전이 검정 (PROJECT.md §7).

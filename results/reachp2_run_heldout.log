@@ -1,0 +1,36 @@
+device=cpu | params=0.86M | n=16 m=8 Q=12 T=6 | curriculum kcap 1->4
+== train (curriculum + aux next-node loss) ==
+  step     1 | kcap 1 | loss 5.8503
+  step   400 | kcap 1 | loss 0.2197
+  step   800 | kcap 1 | loss 0.2265
+  step  1200 | kcap 1 | loss 0.2059
+  step  1600 | kcap 1 | loss 0.1608
+  step  2000 | kcap 1 | loss 0.2017
+  step  2400 | kcap 2 | loss 0.7904
+  step  2800 | kcap 2 | loss 0.7270
+  step  3200 | kcap 2 | loss 0.5943
+  step  3600 | kcap 2 | loss 0.5504
+  step  4000 | kcap 2 | loss 0.5840
+  step  4400 | kcap 3 | loss 0.9223
+  step  4800 | kcap 3 | loss 0.8591
+  step  5200 | kcap 3 | loss 0.7656
+  step  5600 | kcap 3 | loss 0.7426
+  step  6000 | kcap 3 | loss 0.7536
+  step  6400 | kcap 4 | loss 0.7989
+  step  6800 | kcap 4 | loss 0.8411
+  step  7200 | kcap 4 | loss 0.9219
+  step  7600 | kcap 4 | loss 0.9174
+  step  8000 | kcap 4 | loss 0.7836
+== eval (per-config tau, held-out calibration) ==
+  fixed   | acc  43.5% | steps 6.00 | acc/q 40 45 42 45 43 43 44 43 44 45 46 41
+  +halt   | acc  28.3% | steps 1.67 | acc/q 27 28 27 30 30 28 28 26 30 30 29 27
+  persist | acc  72.0% | steps 6.00 | acc/q 40 59 68 76 76 76 78 75 79 78 79 79
+  both    | acc  44.6% | steps 3.33 | acc/q 34 36 39 46 49 48 50 44 49 47 47 48
+== depth vs K (both; answerable & correct) ==
+  K=0: halt-step 4.81 (n=1282)
+  K=1: halt-step 2.82 (n=1687)
+  K=2: halt-step 4.94 (n=662)
+  K=3: halt-step 5.83 (n=446)
+  K=4: halt-step 5.93 (n=396)
+== surprise vs miss corr = -0.442 | amortization both: 34%->48% ==
+saved figure -> results/reachp2_curve_v2.png

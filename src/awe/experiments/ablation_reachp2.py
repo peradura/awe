@@ -138,11 +138,13 @@ def run_seed(args, device):
 
     cfg.kcap = 4
     data = make_batch(args.neval, cfg, rng, device)
-    print("== eval (per-config tau) ==")
+    # held-out calibration batch: tau must not be tuned on the scored batch
+    calib = make_batch(256, cfg, rng, device)
+    print("== eval (per-config tau, held-out calibration) ==")
     res = {}
     out_cfgs = {}
     for name, c in CONFIGS.items():
-        tau = calib_tau(model, cfg, data, c["persist"]) if c["halt"] else 1e9
+        tau = calib_tau(model, cfg, calib, c["persist"]) if c["halt"] else 1e9
         r = run_stream(model, cfg, data, tau=tau, **c); res[name] = r
         acc = sum(r["acc_q"]) / cfg.Q; steps = sum(r["steps_q"]) / cfg.Q
         out_cfgs[name] = {"acc": acc, "steps": steps, "acc_q": r["acc_q"]}

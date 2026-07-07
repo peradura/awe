@@ -7,7 +7,7 @@ reachp's discrimination on an external associative-recall task.** Grounds `PROJE
 
 ## Why this experiment, framed honestly
 
-The 10-seed bake-off (`docs/RESULTS.md` §"Part 3-B") gave two separable results.
+The 10-seed bake-off (`docs/RESULTS.md` §"Part 4") gave two separable results.
 The design targets the **solid, non-unification** one and probes the speculative one:
 
 - **Solid result to *transfer*** — on the synthetic joint task, a **convergence

@@ -1,47 +1,49 @@
 # Results
 
-## Main claim (recalibrated 2026-07-06, after the 10-seed halting-signal bake-off)
+## Main claim (reconciled 2026-07-07, after two independent bake-offs + MQAR transfer)
 
-> Each test-time axis works when driven by *a* suitable signal — depth halting by
-> prediction/state **convergence** (Parts 1, 3-B), an error-gated fast-weight
-> memory by delta-rule writes (Part 2). The 10-seed bake-off (Part 3-B) shows the
-> earlier "joint halting costs accuracy" was **not inevitable for every stopping
-> rule**: entropy- and reconstruction-error halting cost −5.6pp (confident-wrong
-> early exits, early-wrong 8–9%), but convergence signals preserve accuracy
-> (`conv`, `dstate` at −0.0pp vs the persist ceiling 72.0±0.6%). **Caveat**:
-> `dstate` preserves accuracy mostly by *declining to halt* (conservative,
-> 5.93/6 steps); the only signal that also saves compute is `conv` (5.0 steps),
-> a readout statistic with no write-side role.
+> **A convergence signal (readout sym-KL `conv` / state-step norm `dstate`) is the
+> correct halting observable for the depth knob.** Across the 10-seed joint task
+> (Part 4a), an independent weak-learner bake-off with stronger nulls (Part 4b),
+> and single- *and* multi-hop MQAR (Part 5), convergence halting holds accuracy at
+> the fixed-depth ceiling while entropy- and reconstruction-error halting lose
+> 2–6pp — and on the *external* multi-hop task it does so at **less than half the
+> compute on 10/10 seeds**.
 >
-> **Honest bottom line**: depth-halting and memory-writing want **different
-> observables** (convergence for depth; reconstruction-miss for the write). The
-> reconstruction scalar — the literal "one surprise" thesis — is a **halting
-> loser** here (with the tested definition + held-out `tau`), so a *single* scalar
-> driving both is not supported. A *weak* unification — both are gradients of one
-> memory loss (∇_s L for depth, ∇_W L for the write) — is a consistent but
-> near-trivial *interpretation*; it becomes a finding only if the halt signal is
-> shown to predict the write magnitude (untested — the MQAR probe,
-> `docs/mqar_design.md`). See §"Part 3-B".
+> **What is *not* supported is the stronger "one surprise scalar drives both
+> knobs"**: the compute-efficient halter (`conv`) is a pure readout statistic with
+> no write-side role; the literal thesis scalar (`recon`, state-mismatch form)
+> *loses* at depth-halting on every joint task; and the compute-saving of the
+> ‖Δs‖² halter on reachp is partly a **tau-selection artifact**, not an
+> established property (Part 4a †). Depth wants a convergence observable, the
+> write wants a reconstruction-miss observable; the "two gradients of one memory
+> loss" unification remains an **untested interpretation** — it becomes a finding
+> only if the halt signal is shown to predict the write magnitude (the probe in
+> `docs/mqar_design.md`). One counterweight from Part 4b: on the *memory-only*
+> task a reconstruction-family scalar (decodability form) matches entropy at
+> matched compute — recon-halting fails on *joint* tasks, not everywhere.
 
-The evidence is a three-part chain:
+The evidence chain:
 
 | # | claim | task | key number | status |
 |---|---|---|---|---|
 | 1 | depth halting tracks difficulty | in-context reachability | `corr(K, halt) = +0.92` | ✅ |
-| 2 | memory buys accuracy + compute | hidden-rule (partial obs) | persist 5%→81%; both 2.4 vs 8.0 latent steps; `corr(ans, entropy) = −0.96` | ✅ |
-| 3 | joint, *entropy* halt (historical) | partial-obs reachability | entropy halting costs accuracy | 🟡 superseded by 3-B |
-| 3-B | joint halting is **accuracy-preserving** with a convergence signal (conv also saves compute; dstate conservative) | partial-obs reachability, **10-seed** bake-off | conv/dstate −0.0pp vs persist 72.0±0.6%; entropy/recon −5.6pp | ✅ |
+| 2 | memory buys accuracy + compute | hidden-rule (partial obs) | persist 5%→81% (10 seeds: 50.5±0.4% overall); both 2.4 vs 8.0 latent steps; `corr(ans, entropy) = −0.96` | ✅ |
+| 3 | joint, *entropy* halt (historical) | partial-obs reachability | entropy halting costs accuracy | 🟡 superseded by Part 4 |
+| 4a | joint halting is **accuracy-preserving** with a convergence signal | partial-obs reachability (strong learner), **10-seed** bake-off | conv/dstate −0.0pp vs persist 72.0±0.6%; entropy/recon −5.6pp | ✅ |
+| 4b | independent bake-off converges (weak learners, stronger nulls) | rule + original reachp, 10 seeds | reachp: dstate the only useful operating point; rule: recon(decodability) ≈ entropy | ✅ |
+| 5 | convergence-halting **transfers externally** | MQAR single- & multi-hop, 10 seeds each | multi-hop: conv/dstate beat entropy/recon **+2.5pp on 10/10 seeds** at 2.5 vs 5.4 steps | ✅ |
 
 **Cross-cutting caveats**: "compute" = latent retrieval steps only (delta-rule
 write FLOPs are unaffected by halting); models are 0.2–0.9M params on synthetic
-tasks — these are *mechanism* pilots, not LLM-scale evidence. Provenance now
-differs by part: **Parts 1–2 remain single-seed** with `tau` calibrated on the
-scored batch. The **Part 3 bake-off (3-B) is 10 seeds with held-out-batch `tau`**
-— this is where the review's variance + test-set-leakage concern is actually
-addressed. **reachp2 is also 10 seeds**, but its persist/amortization headline
-uses *no halting* (so `tau` is not involved at all); its `+halt`/`both` configs
-still calibrate median `tau` on the scored batch (leakage there is *not* yet
-fixed). Parts 1–2 leakage also pending.
+tasks — these are *mechanism* pilots, not LLM-scale evidence. Provenance:
+Part 1 remains single-seed; Parts 2/4/5 are 10 seeds. `tau` is calibrated on a
+**held-out batch everywhere as of 2026-07-07** (`bakeoff.py` and
+`ablation_reachp3` always did; `calib_tau` in the rule/reachp/reachp2 ablations
+was fixed to held-out — archived seed-0 logs predate the fix; a held-out rerun
+reproduced the reachp2 numbers, `results/reachp2_run_heldout.log`).
+**Part 4a and 4b are NOT one comparison** — different tau-selection objectives
+and different `recon` definitions (see the warning in Part 4).
 
 ---
 
@@ -112,7 +114,7 @@ holds** (`results/reachp_run.log`):
   entropy scalar reads "low, stop" on examples where more depth over the
   still-filling memory would have converted errors into hits (persist's 22→41
   vs both's 20→27 shows the foregone gains). *(Historical: this was the central
-  open problem at the time; Part 3-B below resolves it — the cost is specific to
+  open problem at the time; Part 4 below resolves it — the cost is specific to
   the entropy/recon signals, not the mechanism.)*
 - Depth *increases* with K but as a step function: halt-step ≈ 2 for K≤1, then
   **jumps toward the budget for K≥2** (8.4 at K=2, 9.6–9.9 for K=3–4, pinned at
@@ -132,12 +134,12 @@ holds** (`results/reachp_run.log`):
   measurement error. (The `fixed` baseline of 21% vs 1/24 ≈ 4% chance remains
   explained by within-query-solvable probes + ~3/24 sink probes + sink priors.)
 
-**Diagnosis (revised, then resolved by 3-B)**: three confounded causes, not one —
-(a) base-learner limits on chain-following over accumulated memory, (b) the
+**Diagnosis (revised, then resolved by Part 4)**: three confounded causes, not one
+— (a) base-learner limits on chain-following over accumulated memory, (b) the
 measurement artifact above, and (c) a halting-rule failure for multi-hop
 (confident-wrong early exits). `ablation_reachp2` (curriculum + aux + d=256, 10
 seeds) fixes (a) — persist rises to **72.1±0.6%** (reset 43.3% → persist 72.1%) —
-which isolates (c). The bake-off (**Part 3-B**) then shows (c) is a **signal
+which isolates (c). The bake-off (**Part 4**) then shows (c) is a **signal
 *choice*** problem, not a mechanism failure: entropy/recon halt confident-wrong,
 but convergence signals do not.
 
@@ -146,15 +148,23 @@ but convergence signals do not.
 *(Figure regenerated after the labeling fix; the pre-fix artifacts
 `reachp_curve.png` / `reachp_run.log` are retained for provenance.)*
 
-## Part 3-B — Halting-signal bake-off (`experiments/ablation_reachp3.py`, 10 seeds)
+## Part 4 — Halting-signal bake-off (two independent implementations)
 
-Same joint task, same trained base learner (curriculum + aux, d=256); races four
-halting signals on **identical trajectories** with **per-arm `tau` calibrated on a
-held-out batch**, plus fixed-depth / random-halt baselines and a per-example
-failure decomposition. 10 seeds. Persist ceiling (fixed depth T=6) **72.0±0.6%**.
-(This is the same quantity as reachp2's persist **72.1±0.6%** — full depth, no
-halt — measured by a different script on an independent eval draw; the 0.1pp is
-sampling noise.)
+> ⚠️ **4a and 4b are not one comparison.** They differ in base learner
+> (curriculum-fixed 72% vs original weak learners), **tau-selection objective**
+> (4a: argmax calibration-accuracy; 4b: fewest steps within an accuracy slack),
+> and **`recon` definition** (4a: state-vs-read mismatch ‖n(sₜ₊₁)−n(rₜ)‖²; 4b:
+> vocab-decodability min_v‖rₜ−node(v)‖²). Quote them separately. A canonical run
+> (4b's method + `conv`, strong learner) is queued to unify them.
+
+### Part 4a — strong learner (`experiments/ablation_reachp3.py`, 10 seeds)
+
+Joint task with the curriculum-fixed base learner (reachp2 config, d=256); races
+four halting signals on **identical trajectories** with **per-arm `tau` calibrated
+on a held-out batch**, plus fixed-depth / random-halt baselines and a per-example
+failure decomposition. Persist ceiling (fixed depth T=6) **72.0±0.6%**.
+(Same quantity as reachp2's persist **72.1±0.6%** — full depth, no halt — measured
+by a different script on an independent eval draw; the 0.1pp is sampling noise.)
 
 | halt signal | acc | avg steps | gap vs persist | early-wrong | corr(ans, sig₀) |
 |---|---|---|---|---|---|
@@ -165,10 +175,17 @@ sampling noise.)
 
 † conv's step count is **bimodal across seeds** (std 0.58 vs dstate's 0.07): on
 **7/10** seeds it genuinely saves compute (~4.6 steps, ~46% correct early exits);
-on **3/10** — where the accuracy-optimal `tau` lands on a near-flat curve — it
-collapses to dstate-like conservatism (~5.9 steps, ~5% early-right, i.e. no
-saving). **Accuracy (−0.0pp) is robust across all 10 seeds; the compute *saving*
-is not.** (corr(ans, sig₀) for conv is measured at step 1 — no finite step 0.)
+on **3/10** it collapses to dstate-like conservatism (~5.9 steps, no saving).
+**Attribution (2026-07-07)**: this bimodality — and dstate's 5.93/6
+"barely-halts" conservatism — is **substantially an artifact of this script's
+tau rule** (`tau = argmax` calibration *accuracy*, ignoring steps: on a near-flat
+acc-vs-tau curve the operating point lands anywhere, including the conservative
+end). Part 4b's rule (fewest steps within an accuracy *slack*) is the right
+objective for a compute-saving claim and would likely take the low-step end of
+the same flat curve; the queued canonical run settles this. Until then:
+**accuracy (−0.0pp) is robust across all 10 seeds; the compute-saving size is
+tau-rule-dependent.** (corr(ans, sig₀) for conv is measured at step 1 — no
+finite step 0.)
 
 **Read carefully — the result is real but narrow:**
 
@@ -201,6 +218,49 @@ is not.** (corr(ans, sig₀) for conv is measured at step 1 — no finite step 0
 
 ![halting-signal bake-off](../results/reachp3_bakeoff.png)
 
+### Part 4b — weak learners, stronger nulls (`experiments/bakeoff.py`, 10 seeds)
+
+An **independent implementation** (parallel session) on the *original* rule and
+reachp tasks (no curriculum fix), with a stricter protocol: five signals (`ent`,
+`recon`=decodability, `rnorm`, `dstate`, `dent`=Δ-surprise), a **within-block
+shuffle null** (`shuf_b` — beating it requires true per-example information, not
+just a per-position schedule), **full tau-sweep (acc, steps) curves** for
+matched-compute reads, slack-based held-out tau, and checkpoint reuse.
+
+| task (persist) | signal | acc | steps | verdict |
+|---|---|---|---|---|
+| rule (50.5±0.4%) | ent | 50.1±0.7% | 2.22 | works |
+| rule | **recon** (decodability) | 50.1±0.5% | 2.38 | **≈ ent — recon-halting survives on the memory-only task** |
+| rule | dstate | 50.3±0.6% | **1.90** | best |
+| reachp (35.1±0.7%) | ent | 34.7±0.6% | 9.71 | refuses to halt (safe but useless) |
+| reachp | recon (decodability) | 31.7±0.6% | 8.39 | −3.4pp, tau fallback |
+| reachp | **dstate** | 33.8±0.6% | **6.28** | **only useful operating point** (−1.3pp at 63% compute) |
+
+Two things 4b adds that 4a cannot: (i) on the **memory-only** task, a
+reconstruction-family scalar is as good a halting signal as entropy — the
+recon-halting failure is specific to *joint* (multi-hop-over-memory) tasks, not
+universal; (ii) the earlier "−9.5pp halting cost" on weak-learner reachp is
+**substantially a median-tau calibration artifact** — with slack-based held-out
+tau, entropy doesn't *hurt*, it just provides no compute-saving operating point.
+Note again: 4b's `recon` (decodability) is a **different scalar** from 4a's
+(state-mismatch); "recon survives on rule / loses on joint" is a statement about
+two definitions, not one signal behaving inconsistently.
+
+## Part 5 — External transfer: MQAR (10 seeds each; full details `docs/mqar_design.md`)
+
+- **Single-hop MQAR**: convergence-halting **transfers** — `conv` matches the
+  ceiling (68.2±0.5%) at **2.53/6 steps (~58% compute saved, no bimodality)**. But
+  the task doesn't discriminate signals (all four cost-free): its errors are the
+  ~30% *unanswerable* probes (wrong at any depth), so early halting is harmless.
+- **Multi-hop MQAR** (H-hop recall, H∈1..3 = difficulty): the **discrimination
+  reproduces externally** — conv/dstate beat entropy/recon by **+2.5pp on 10/10
+  seeds** (conv−entropy +2.76±0.35pp) at less than half the compute (2.5 vs 5.4
+  steps); depth grows with hop count (dstate halt-step 2.75→3.51). Mechanism
+  differs from reachp (here entropy/recon *drift to the budget* past the depth-3
+  accuracy peak, rather than halting confident-wrong-early) — same conclusion:
+  **entropy/recon are the wrong halting observables; convergence is right.**
+  Caveat: weak multi-hop base learner (persist 41.6±0.9%) — mechanism-scale.
+
 ## Negative baseline (retained)
 
 Full-table reachability (`experiments/ablation_amort.py`): the whole graph in
@@ -223,10 +283,14 @@ Different experiments use different scalars; the docs previously blurred them:
 | `ablation_ttt` / `ablation_amort` | recon error (shared) | recon error (shared) — the literal thesis; inconclusive/negative tasks |
 | Part 2 `ablation_rule` | recon error | readout entropy |
 | Part 3 `ablation_reachp` | recon error | readout entropy |
-| **Part 3-B `ablation_reachp3`** | recon error (write unchanged) | **bake-off: entropy / conv / dstate / recon**, held-out tau |
+| **Part 4a `ablation_reachp3`** | recon error (write unchanged) | bake-off: entropy / conv / dstate / **recon = state-vs-read mismatch** |
+| **Part 4b `bakeoff.py`** | recon error (write unchanged) | bake-off: ent / **recon = vocab decodability** / rnorm / dstate / dent |
+| **Part 5 `ablation_mqar{,_hop}`** | recon error (write unchanged) | bake-off: entropy / conv / dstate / recon (state-mismatch) |
 
-**Verdict on the literal "one reconstruction-error scalar" thesis**: now tested
-(the `recon` arm of Part 3-B) and it **loses at halting** (−5.6pp, early-wrong
-9%). A single scalar drives halting cost-free only if it is a *convergence*
-signal (`conv` / `dstate`); the write-relevant one (`dstate` ≈ ‖∇_s L‖) is the
-*safe* member, not the compute-efficient one. See §"Part 3-B" and `PROJECT.md` §4.
+**Verdict on the literal "one reconstruction-error scalar" thesis**: tested and
+it **loses at halting on every joint task** (4a −5.6pp; 4b −3.4pp with the
+decodability form; Part 5 multi-hop −1.6pp / budget-drift) — but **matches
+entropy on the memory-only task** (4b rule). A single scalar drives halting
+cost-free only if it is a *convergence* signal (`conv` / `dstate`); the
+write-relevant one (`dstate` ≈ ‖∇_s L‖) preserves accuracy but its compute
+saving is tau-rule-dependent (Part 4a †). See §"Part 4" and `PROJECT.md` §4.
