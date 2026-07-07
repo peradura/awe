@@ -26,6 +26,12 @@ and **how much Weight to adapt** (TTT) — hence *Adaptive Weight & Exit*.
 > (MQAR)? See [`docs/RESULTS.md`](docs/RESULTS.md) §"Part 4", `PROJECT.md` §4/§7,
 > and [`docs/mqar_design.md`](docs/mqar_design.md).
 
+> **New here? Start with the intuition explainer** →
+> [`docs/intuition.md`](docs/intuition.md) (Korean). Builds the whole idea from
+> zero — what *"a latent step approximates gradient descent on the memory loss"*
+> means, why `surprise` *is* that gradient, then the experiment design and results
+> in plain language.
+
 ---
 
 ## Why this might be new (narrowed 2026-07-06)
@@ -107,7 +113,8 @@ python -m awe.experiments.ablation_reachp2 --steps 8000   # sharpened joint (cur
 (Or without install: `PYTHONPATH=src python -m awe.experiments.ablation_rule`.)
 Uses GPU if available, else CPU (models are ~0.2–0.9M params — CPU is fine).
 
-**Full overview → [`PROJECT.md`](PROJECT.md). Results → [`docs/RESULTS.md`](docs/RESULTS.md).
+**Intuition (Korean, start here if new) → [`docs/intuition.md`](docs/intuition.md).
+Full overview → [`PROJECT.md`](PROJECT.md). Results → [`docs/RESULTS.md`](docs/RESULTS.md).
 Experiment log → [`docs/exp_logs/LOG.md`](docs/exp_logs/LOG.md).**
 
 ## Status
@@ -163,7 +170,7 @@ src/awe/
 ├── models/     recurrent.py · ttt.py · amort.py · memory.py            (reasoners)
 └── experiments/ depth_sanity · ablation_{ttt,amort,rule,reachp,reachp2,reachp3,mqar,mqar_hop} · bakeoff.py
 scripts/  sweep.sh · aggregate.py · gpu_watch_run.sh  (multi-seed + polite shared-GPU runner)
-docs/   proposal.md · RESULTS.md · mqar_design.md · REVIEW.md · RUNBOOK.md · exp_logs/LOG.md
+docs/   intuition.md (KR explainer) · proposal.md · RESULTS.md · mqar_design.md · REVIEW.md · RUNBOOK.md · exp_logs/LOG.md
 results/  figures + run logs
 ```
 See [`PROJECT.md`](PROJECT.md) for the full narrative and file roles.
