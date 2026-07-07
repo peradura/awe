@@ -1,0 +1,24 @@
+seed=7 device=cuda | params=5.06M | n=8192 m=4 Q=16 T=6
+== train (single-hop MQAR, persist stream) ==
+  step     1 | loss 18.3074
+  step   400 | loss 10.4887
+  step   800 | loss 6.7279
+  step  1200 | loss 5.8124
+  step  1600 | loss 4.9239
+  step  2000 | loss 4.9026
+  step  2400 | loss 4.9843
+  step  2800 | loss 4.8107
+  step  3200 | loss 4.6127
+  step  3600 | loss 4.5883
+  step  4000 | loss 4.3863
+  step  4400 | loss 4.6467
+  step  4800 | loss 4.4982
+  step  5200 | loss 4.3540
+  step  5600 | loss 4.6458
+  step  6000 | loss 4.5427
+== persist ceiling (fixed depth T=6): 51.6% ==
+  entropy  | acc  51.6% (+0.0pp) | steps 5.85 | early-wrong 0%
+  conv     | acc  51.6% (+0.0pp) | steps 5.84 | early-wrong 0%
+  dstate   | acc  51.6% (+0.0pp) | steps 5.92 | early-wrong 2%
+  recon    | acc  51.6% (+0.0pp) | steps 5.44 | early-wrong 0%
+saved -> results/mqar8k_seed7.json

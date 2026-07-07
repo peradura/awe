@@ -319,8 +319,14 @@ off.
 
 - **Mechanism scale.** Models are 0.2–0.9M params on synthetic tasks; these are
   mechanism pilots, not LLM-scale evidence.
-- **Non-standard MQAR.** Our mini-MQAR uses vocab 64, not the standard zoology config
-  (vocab 8192). A standard-config anchor is planned [Backfill].
+- **Standard-vocab anchor (single-hop, resolved for transfer).** At the standard
+  zoology scale (vocab 8192, ≤64 KV pairs, 10 seeds) the transfer holds: conv's
+  eval tau-sweep admits a within-1pp-of-ceiling operating point at 2.24±0.16/6
+  steps on every seed (curve read; the inherited argmax-τ headline barely halts —
+  reproducing Appendix C's τ-rule artifact at scale). Ceiling 51.7±0.6% (weaker
+  base learner at vocab 8192 — mechanism-scale). Single-hop remains
+  non-discriminating as in §4.3; the *discriminating* multi-hop variant was not
+  rerun at standard vocab.
 - **Depth-sanity provenance (resolved).** The Part 1 depth∝difficulty sanity was
   regenerated at 10 seeds with archived logs (corr(K, steps-to-converge) =
   +0.997±0.001; supersedes the earlier unarchived single-seed +0.92).
@@ -364,8 +370,11 @@ test-time-adaptive models.
 
 - [x] Part 1 `depth_sanity` multi-seed (10) + archive logs — done 2026-07-07: corr
       +0.997±0.001, conv-step = K exactly, `results/depth_sanity_s{0..9}.log`.
-- [~] ONE standard-config zoology-style MQAR anchor run (vocab 8192, m=4, Q=16,
-      10 seeds) — design in `docs/mqar_design.md` §anchor; running (2026-07-07, GPU1).
+- [x] ONE standard-config zoology-style MQAR anchor run (vocab 8192, m=4, Q=16,
+      10 seeds) — done 2026-07-07: transfer holds (conv within-1pp point at
+      2.24±0.16/6 steps, 10/10, curve read); single-hop non-discriminating as
+      expected. See `docs/mqar_design.md` §anchor result. Optional residual:
+      multi-hop at vocab 8192.
 - [x] Regenerate Fig 1 as a multi-seed band plot — `scripts/fig1_bakeoff_band.py` (2026-07-07).
 - [ ] Venue pick + page-limit fit; LaTeX port once section content stabilizes.
 

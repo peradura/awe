@@ -443,9 +443,15 @@ exactly on the multi-hop examples where extra depth would have paid off.
 \begin{itemize}
   \item \textbf{Mechanism scale.} Models are 0.2--0.9M parameters on synthetic
   tasks; these are mechanism pilots, not LLM-scale evidence.
-  \item \textbf{Non-standard MQAR.} Our mini-MQAR uses vocab 64, not the
-  standard Zoology config (vocab 8192). A standard-config anchor run is in
-  progress. % TODO: replace with mqar8k result when the run completes
+  \item \textbf{Standard-vocab anchor (single-hop).} At the standard Zoology
+  scale (vocab 8192, ${\le}64$ KV pairs, 10 seeds) the \emph{transfer} holds:
+  \sig{conv}'s eval $\tau$-sweep admits a within-1pp-of-ceiling operating point
+  at $2.24\pm0.16/6$ steps on every seed (curve read; the inherited
+  argmax-$\tau$ headline barely halts, reproducing Appendix~\ref{app:tau}'s
+  $\tau$-rule artifact at scale). Ceiling $51.7\pm0.6\%$ --- a weaker base
+  learner at vocab 8192. Single-hop remains non-discriminating as in
+  \S\ref{sec:transfer}; the \emph{discriminating} multi-hop variant was not
+  rerun at standard vocab.
   \item \textbf{Compute accounting.} ``Compute'' counts retrieval steps only;
   delta-rule \emph{write} FLOPs are unaffected by halting and not counted.
   \item \textbf{Weak multi-hop learner.} The multi-hop MQAR base learner

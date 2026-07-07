@@ -44,12 +44,11 @@ HANDOFF.md 읽고 진행."
 4. ~~LaTeX 포팅~~ ✅ `docs/paper/latex/` — main.tex(NeurIPS 2024 preprint 스타일,
    DeltaNet arXiv 소스에서 정품 .sty 추출) + references.bib + Fig1/Tab1/Tab2,
    `latexmk -pdf main.tex`로 8p 컴파일 확인(경고 0). 제목 확정: "Convergence,
-   Not Surprise: ..." (사용자 선택). 남은 것: ① mqar8k 완료 시 Limitations의
-   `% TODO` 교체, ~~② 부록 A/B/C~~ ✅ 포팅 완료(signal inventory + 4a/4b 표 +
+   Not Surprise: ..." (사용자 선택). ~~① mqar8k Limitations 교체~~ ✅ (전이 성립 —
+   conv 2.24±0.16/6스텝 curve read, 10/10; argmax-tau 아티팩트 8192 재현 기록), ~~② 부록 A/B/C~~ ✅ 포팅 완료(signal inventory + 4a/4b 표 +
    tau-규칙 ablation 표, 9p 컴파일 확인), ~~③ bib TODO-VERIFY~~ ✅ arXiv API로
    3건 검증 완료(별칭≠실제 제목 — bib·본문 정정), ④ venue 확정
    후 스타일 파일 교체 + 페이지 fit, ⑤ 저자/소속/지도교수 확정.
-5. depth_sanity 다시드 ✅ (corr +0.997±0.001 — RESULTS/PROJECT/LOG/draft 반영,
-   구 +0.92는 supersede). mqar8k 앵커(n=8192) 10시드는 GPU1 실행 중 —
-   완료 시 `--aggregate --tag 8k` 집계 후 draft §4.3·Limitations·mqar_design.md
-   ·LOG.md 갱신 (해석 시나리오는 mqar_design.md §anchor에 기록).
+5. backfill 2종 모두 ✅ — depth_sanity(corr +0.997±0.001, 구 +0.92 supersede),
+   mqar8k 앵커(전이 성립, 판별력은 단일홉이라 없음 — mqar_design.md §anchor result).
+   잔여 optional: multi-hop을 vocab 8192로 재실행(판별 claim의 표준 스케일 검증).

@@ -207,6 +207,32 @@ the discrimination/transfer to the toy vocab (entropy over 64 classes ≠ entrop
   reorder → real finding, must go in the paper.
 - Artifacts: `results/mqar8k_seed{0..9}.json`, log per seed, aggregate in LOG.md.
 
+### Anchor result (2026-07-07, 10 seeds, GPU1 — scenario (i), with a caveat)
+
+Persist ceiling **51.7±0.6%** (base learner weaker at vocab 8192 than at 64's
+68.2% — expected; frontier saturates 49.8%@1 → 51.7%@6). All four signals
+accuracy-cost-free (+0.0pp), i.e. single-hop remains **non-discriminating** at
+standard scale, consistent with the mini run.
+
+**Transfer of the saving holds — but read it from the curve, not the argmax
+headline.** Under the inherited argmax-accuracy tau (pilot protocol verbatim),
+all arms barely halt (conv 5.53±0.62 — bimodal again, 8/10 seeds ~5.84, 2/10
+~4.3; dstate 5.92±0.01) — **the exact tau-rule artifact the canonical run
+diagnosed** (draft App C), now reproduced at 8192. The eval tau-sweep curves,
+however, show a within-1pp-of-ceiling operating point at **2.24±0.16 / 6 steps
+for conv on 10/10 seeds** (curve read; slack-calibrated rerun not performed —
+protocol was frozen by design). Entropy's cheapest within-1pp point is
+2.7–3.1 — at single-hop even entropy is cheap, as at vocab 64; corr(ans,
+entropy) −0.57 still anti-tracks answerability. depth∝load absent (single-hop
+amortization regime; dstate argmax-tau barely halts so its load curve is flat).
+
+**Verdict**: the vocab-64 limitation is addressed for the *transfer* claim
+(conv reaches the ceiling at ~37% of the budget at standard vocab, uniform);
+the *discrimination* claim was never expected from single-hop and remains
+anchored on multi-hop (vocab-64) — a standard-vocab multi-hop rerun is the
+remaining optional backfill. Artifacts: `results/mqar8k_seed{0..9}.json`,
+`mqar8k_s{0..9}.log`, `mqar8k_bakeoff.png`, `mqar8k_aggregate.log`.
+
 ## References (verified 2026-07-06)
 
 Zoology 2312.04927 · Based 2402.18668 · H3 2212.14052 · DeltaNet 2406.06484 ·

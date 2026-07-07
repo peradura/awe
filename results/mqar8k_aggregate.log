@@ -1,0 +1,7 @@
+== aggregate over 10 seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] ==
+persist ceiling: 51.7% ± 0.6
+  entropy  | acc  51.7±0.6% | steps 5.86 | gap  +0.0pp | early-wrong 0%
+  conv     | acc  51.7±0.6% | steps 5.53 | gap  +0.0pp | early-wrong 1%
+  dstate   | acc  51.7±0.6% | steps 5.92 | gap  -0.0pp | early-wrong 2%
+  recon    | acc  51.7±0.6% | steps 5.34 | gap  +0.0pp | early-wrong 0%
+saved figure -> results/mqar8k_bakeoff.png
