@@ -191,17 +191,30 @@ Uses GPU if available, else CPU (models are ~0.2–0.9M params — CPU is fine).
   (10/10 vs 0/10 for ent/recon/rnorm/dent); conv +7.4pp above the within-block
   null. `ablation_reachp3` retired to history. (Remaining optional: same protocol
   on MQAR.)
-- [ ] **Write-magnitude probe** (the only non-tautological unification test):
-  per example, does the halting signal at halt-step predict the delta-rule write
-  magnitude ‖Δdelta‖ and the subsequent memory-loss decrease? Negative outcome =
-  the honest "different observables" verdict; positive = the unification earns
-  empirical content. (`docs/mqar_design.md`.)
-- [ ] **Strengthen / anchor**: raise the multi-hop MQAR base learner (curriculum
-  like reachp2) so the 41.6% ceiling isn't the bottleneck, and anchor against a
-  published baseline (Transformer ceiling, Based 2402.18668, DeltaNet 2406.06484,
-  Gated DeltaNet 2412.06464; `HazyResearch/zoology` harness). In-context linear
-  regression (Garg 2208.01066 / von Oswald 2212.07677) as a follow-up mechanistic
-  probe.
+- [ ] **Write the workshop paper NOW** (direction re-adjudicated 2026-07-07 by a
+  codex + critic cross-review — both converged): the depth-knob diagnosis is
+  already the publishable unit. Story: *"Convergence, not surprise, is the right
+  halting observable for TTT-style memory reasoners"* — diagnosis + recipe,
+  anchored on the canonical bake-off (Part 4c) + external transfer (Part 5).
+  Narrative-lock first; run only experiments the paper needs.
+- [ ] **Targeted backfill only** (the two reviewer-rejection gaps):
+  (i) Part 1 `depth_sanity` multi-seed + archived logs (currently single-seed,
+  log lost — weakest table row); (ii) ONE externally legible anchor — a
+  standard-config zoology-style MQAR run (vocab 8192-class, not our mini n=64)
+  against published baselines (Based 2402.18668, DeltaNet 2406.06484,
+  Gated DeltaNet 2412.06464). Raising the multi-hop mini-MQAR base learner is
+  explicitly NOT a goal in itself.
+- [ ] *(post-paper, the high-ceiling follow-up — plausibly a second paper)*:
+  the write-magnitude question, **re-designed** — the roadmap's earlier passive
+  same-example correlation is retired as confounded twice over (difficulty
+  common-cause + mechanical read-after-write dependency: retrieving key k reads
+  the memory the write to k just produced). The real test moves to the
+  in-context-linear-regression setting (Garg 2208.01066 / von Oswald 2212.07677)
+  where ∇L_mem is tractable: (a) first verify the unconstrained latent step
+  approximates GD at all; (b) then test the halt↔write coupling
+  **interventionally** (counterfactually scale a write, difficulty pinned) against
+  the GD-predicted *functional form*, and (c) demand **cross-regime invariance**
+  of the coupling law. Sign-only correlations license nothing.
 - **Kill criterion — scoped to the depth-control thesis, and NOT triggered**:
   convergence-halting did transfer (conv/dstate never lose >5pp to fixed depth at
   matched compute; depth∝difficulty appears on multi-hop MQAR). This is **not** a
