@@ -4,7 +4,13 @@
 HANDOFF.md 읽고 진행."
 
 ## 상태 (2026-07-07)
-- 스켈레톤 완성: `docs/paper/draft.md` (제목후보·초록·섹션구조·그림/표 계획·TODO).
+- **v1 산문 완성**: `docs/paper/draft.md` — Abstract→Conclusion 전 섹션을 스켈레톤
+  불릿에서 발행 가능한 산문으로 확장. Table 1(4c)·Table 2(Part 5 multi-hop) 본문 삽입.
+  모든 헤드라인 수치를 소스 JSON에서 재검증(2026-07-07): Part 4c(conv 71.2±0.5 @
+  3.89±0.09, tau_ok 10/10, prem 0.02, null 63.8→+7.4pp; 나머지 4신호 0/10),
+  Part 5 multi-hop(conv 42.3 vs ent 39.5, +2.76±0.35pp 10/10, depth 2.75→3.51),
+  단일홉 cost-free — 전부 JSON과 일치.
+- 스켈레톤(제목후보·그림/표 계획·TODO·writing conventions)은 파일 하단에 보존.
 - 방향 근거: codex+critic 교차리뷰 수렴 — "추가 실험 대신 논문 먼저, backfill은
   리뷰어 gap 2개만". 판정 기록: `docs/REVIEW.md`, `docs/exp_logs/LOG.md` 메모,
   `PROJECT.md` §7.
@@ -23,9 +29,27 @@ HANDOFF.md 읽고 진행."
 4. write-magnitude probe는 본문 주장 금지 (2중 confound — 후속 논문 시드).
 5. 모든 수치 mean±std·10 seeds·held-out tau 표기, 예외는 명시.
 
-## 남은 작업 순서
-1. draft.md 섹션 살 붙이기 (Intro→4장 결과 순서 권장; 수치는 JSON에서 재검증하며)
-2. Fig 1 multi-seed band 재생성 스크립트 (bakeoff JSONs의 curve 필드 사용)
-3. backfill 실험 2개 (GPU는 완전 유휴 시 + 사용자 승인): depth_sanity 다시드(CPU 가능),
-   표준 zoology-MQAR 앵커 1개(설계 먼저)
-4. LaTeX 포팅은 내용 안정화 후
+## 남은 작업 순서 (갱신 2026-07-07 오후)
+1. ~~draft.md 섹션 살 붙이기~~ ✅ v1 산문 완성 + **critic·codex 이중 교차검토 반영**
+   (§4.2를 4c 자체 분해수치로 재앵커, recon 태깅 전수화, "weak unification survives"
+   문구 제거, conv/dstate 컴퓨트 구분, ±std 보강, std=population 컨벤션 명문화).
+   codex 아티팩트: `.omc/artifacts/ask/codex-you-are-cross-reviewing-*.md`
+2. ~~Fig 1 multi-seed band~~ ✅ `scripts/fig1_bakeoff_band.py` →
+   `results/fig1_bakeoff_band.{png,pdf}` (10-seed 밴드, CVD-safe, grayscale-safe).
+3. backfill 2개 — **실행 중(2026-07-07)**: depth_sanity 10시드(GPU0,
+   `results/depth_sanity_s*.log`), 표준 MQAR 앵커 n=8192/m=4/Q=16 10시드(GPU1,
+   `results/mqar8k_*`; 설계는 `docs/mqar_design.md` §Standard-config anchor).
+   완료 후: depth_sanity corr 집계 → draft Limitations 갱신; mqar8k 집계 → §4.3/
+   Limitations 갱신 (결과별 해석 시나리오는 설계 섹션에 기록됨).
+4. ~~LaTeX 포팅~~ ✅ `docs/paper/latex/` — main.tex(NeurIPS 2024 preprint 스타일,
+   DeltaNet arXiv 소스에서 정품 .sty 추출) + references.bib + Fig1/Tab1/Tab2,
+   `latexmk -pdf main.tex`로 8p 컴파일 확인(경고 0). 제목 확정: "Convergence,
+   Not Surprise: ..." (사용자 선택). 남은 것: ① mqar8k 완료 시 Limitations의
+   `% TODO` 교체, ~~② 부록 A/B/C~~ ✅ 포팅 완료(signal inventory + 4a/4b 표 +
+   tau-규칙 ablation 표, 9p 컴파일 확인), ③ bib의 TODO-VERIFY 3건
+   (PonderTTT·UT-Memory·FR-Ponder — post-cutoff arXiv ID) 검증, ④ venue 확정
+   후 스타일 파일 교체 + 페이지 fit, ⑤ 저자/소속/지도교수 확정.
+5. depth_sanity 다시드 ✅ (corr +0.997±0.001 — RESULTS/PROJECT/LOG/draft 반영,
+   구 +0.92는 supersede). mqar8k 앵커(n=8192) 10시드는 GPU1 실행 중 —
+   완료 시 `--aggregate --tag 8k` 집계 후 draft §4.3·Limitations·mqar_design.md
+   ·LOG.md 갱신 (해석 시나리오는 mqar_design.md §anchor에 기록).
