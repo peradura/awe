@@ -35,7 +35,7 @@ Fast-Weight Memory Reasoners}
 \begin{abstract}
 Test-time compute can be spent two ways: thinking longer (latent depth) or
 adapting weights (test-time training). A natural hypothesis --- implicit in
-Titans-style surprise writing and PonderTTT-style gating --- is that one
+Titans-style surprise writing and ponder-style TTT gating --- is that one
 \emph{surprise} signal (the memory's self-supervised reconstruction error)
 should govern both: keep thinking and keep writing while surprised, stop when
 not. \textbf{We test this directly and find it fails for the halting half.} On
@@ -129,7 +129,8 @@ refutation, not a speculative mechanism, is the contribution.
 \paragraph{Latent-depth halting.} Adaptive computation
 time~\citep{graves2016act} and PonderNet~\citep{banino2021pondernet} learn a
 halting distribution over recurrent steps; Coconut~\citep{hao2024coconut} and
-FR-Ponder~\citep{frponder2025} extend ponder-style gating to latent reasoning;
+latent ponder gating~\citep{frponder2025} extend ponder-style halting to latent
+reasoning;
 recurrent-depth transformers~\citep{geiping2025recurrent} halt on
 \emph{KL-convergence} of the latent state --- the closest prior to our
 convergence signals. HRM~\citep{wang2025hrm} and TRM~\citep{jolicoeur2025trm}
@@ -140,12 +141,12 @@ that also adapts weights.
 \paragraph{Weight adaptation.} TTT~\citep{sun2020ttt} and TTT
 layers~\citep{sun2024tttlayers} update parameters on the test stream;
 Titans~\citep{behrouz2025titans} writes to a fast-weight memory gated by a
-\textbf{surprise} (reconstruction-error) scalar; PonderTTT~\citep{ponderttt2026}
-adds a binary gate. The write signal in all of these is a reconstruction miss
+\textbf{surprise} (reconstruction-error) scalar; \citet{ponderttt2026} gates
+test-time-training compute with a binary ponder decision. The write signal in all of these is a reconstruction miss
 --- exactly the signal our bake-off finds to be the \emph{wrong} halting
 observable.
 
-\paragraph{Depth--memory interaction.} UT-Memory~\citep{utmemory2026} combines
+\paragraph{Depth--memory interaction.} \citet{utmemory2026} combines
 train-time capacity with an ACT router; we differ on both counts --- our
 adaptation is \emph{test-time} accumulation into a fast weight, and our halting
 is \emph{signal-driven} with no learned router or Q-head.

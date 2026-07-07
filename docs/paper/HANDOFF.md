@@ -46,8 +46,8 @@ HANDOFF.md 읽고 진행."
    `latexmk -pdf main.tex`로 8p 컴파일 확인(경고 0). 제목 확정: "Convergence,
    Not Surprise: ..." (사용자 선택). 남은 것: ① mqar8k 완료 시 Limitations의
    `% TODO` 교체, ~~② 부록 A/B/C~~ ✅ 포팅 완료(signal inventory + 4a/4b 표 +
-   tau-규칙 ablation 표, 9p 컴파일 확인), ③ bib의 TODO-VERIFY 3건
-   (PonderTTT·UT-Memory·FR-Ponder — post-cutoff arXiv ID) 검증, ④ venue 확정
+   tau-규칙 ablation 표, 9p 컴파일 확인), ~~③ bib TODO-VERIFY~~ ✅ arXiv API로
+   3건 검증 완료(별칭≠실제 제목 — bib·본문 정정), ④ venue 확정
    후 스타일 파일 교체 + 페이지 fit, ⑤ 저자/소속/지도교수 확정.
 5. depth_sanity 다시드 ✅ (corr +0.997±0.001 — RESULTS/PROJECT/LOG/draft 반영,
    구 +0.92는 supersede). mqar8k 앵커(n=8192) 10시드는 GPU1 실행 중 —

@@ -95,8 +95,8 @@ speculative mechanism, is the contribution.
 ## 2. Related work
 
 **Latent-depth halting.** Adaptive computation time and PonderNet learn a halting
-distribution over recurrent steps; Coconut (2412.06769) and FR-Ponder (2509.24238)
-extend ponder-style gating to latent reasoning; recurrent-depth transformers
+distribution over recurrent steps; Coconut (2412.06769) and He & Tang (2509.24238,
+"Learning to Ponder") extend ponder-style gating to latent reasoning; recurrent-depth transformers
 (2502.05171) halt on *KL-convergence* of the latent state — the closest prior to our
 convergence signals. HRM (2506.21734) and TRM (2510.04871) learn a Q-halting head on
 synthetic reasoning. These works learn or hand-design a halting rule but do not race
@@ -104,11 +104,12 @@ candidate signals against each other on a task that also adapts weights.
 
 **Weight adaptation.** TTT (1909.13231) and TTT layers (2407.04620) update parameters
 on the test stream; Titans (2501.00663) writes to a fast-weight memory gated by a
-**surprise** (reconstruction-error) scalar; PonderTTT (2601.00894) adds a binary
-gate. The write signal in all of these is a reconstruction miss — exactly the signal
+**surprise** (reconstruction-error) scalar; Sim (2601.00894, "When to Ponder")
+gates TTT compute with a binary ponder decision. The write signal in all of these is a reconstruction miss — exactly the signal
 our bake-off finds to be the *wrong* halting observable.
 
-**Depth–memory interaction.** UT-Memory (2604.21999) combines train-time capacity with
+**Depth–memory interaction.** Sapunov (2604.21999, "Universal Transformers Need
+Memory") combines train-time capacity with
 an ACT router; we differ on both counts — our adaptation is *test-time* accumulation
 into a fast weight, and our halting is *signal-driven* with no learned router or
 Q-head.
