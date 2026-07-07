@@ -1,0 +1,40 @@
+/home/dongwan0629/research/awe/.venv/lib/python3.12/site-packages/torch/nn/modules/transformer.py:529: UserWarning: The PyTorch API of nested tensors is in prototype stage and will change in the near future. We recommend specifying layout=torch.jagged when constructing a nested tensor, as this layout receives active development, has better operator coverage, and works with torch.compile. (Triggered internally at /pytorch/aten/src/ATen/NestedTensorImpl.cpp:178.)
+  output = torch._nested_tensor_from_mask(
+device=cuda | params=0.68M | n=28 sinks=2 T=12
+== train ==
+  step     1 | loss 3.4800
+  step   300 | loss 2.0756
+  step   600 | loss 1.9229
+  step   900 | loss 1.6893
+  step  1200 | loss 1.2280
+  step  1500 | loss 0.4527
+  step  1800 | loss 0.0061
+  step  2100 | loss 0.0021
+  step  2400 | loss 0.0010
+  step  2700 | loss 0.0007
+  step  3000 | loss 0.0005
+== eval ==
+ accuracy vs test-time depth:
+   r=  1 ->  15.9%
+   r=  2 ->  26.0%
+   r=  4 ->  43.6%
+   r=  6 ->  61.4%
+   r=  8 ->  78.4%
+   r= 12 -> 100.0%
+   r= 16 -> 100.0%
+ corr(K, steps-to-converge) = +0.997   [halting signal]
+ corr(K, entropy@deep)      = -0.257
+  K :   n    conv-step   acc
+   0 :   448      1.00    100.0%
+   1 :   508      1.00    100.0%
+   2 :   606      2.00    100.0%
+   3 :   535      3.00    100.0%
+   4 :   517      4.00    100.0%
+   5 :   521      5.00    100.0%
+   6 :   550      6.00    100.0%
+   7 :   490      7.00    100.0%
+   8 :   529      8.00    100.0%
+   9 :   442      9.00    100.0%
+  10 :   401     10.00    100.0%
+  11 :   266     11.00    100.0%
+  12 :   187     12.00    100.0%

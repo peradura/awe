@@ -35,7 +35,7 @@ The evidence chain:
 
 | # | claim | task | key number | status |
 |---|---|---|---|---|
-| 1 | depth halting tracks difficulty | in-context reachability | `corr(K, halt) = +0.92` | ✅ |
+| 1 | depth halting tracks difficulty | in-context reachability | `corr(K, halt) = +0.997±0.001` (10 seeds, 2026-07-07 rerun) | ✅ |
 | 2 | memory buys accuracy + compute | hidden-rule (partial obs) | persist 5%→81% (10 seeds: 50.5±0.4% overall); both 2.4 vs 8.0 latent steps; `corr(ans, entropy) = −0.96` | ✅ |
 | 3 | joint, *entropy* halt (historical) | partial-obs reachability | entropy halting costs accuracy | 🟡 superseded by Part 4 |
 | 4a | joint halting is **accuracy-preserving** with a convergence signal | partial-obs reachability (strong learner), **10-seed** bake-off | conv/dstate −0.0pp vs persist 72.0±0.6%; entropy/recon −5.6pp | ✅ |
@@ -46,7 +46,7 @@ The evidence chain:
 **Cross-cutting caveats**: "compute" = latent retrieval steps only (delta-rule
 write FLOPs are unaffected by halting); models are 0.2–0.9M params on synthetic
 tasks — these are *mechanism* pilots, not LLM-scale evidence. Provenance:
-Part 1 remains single-seed; Parts 2/4/5 are 10 seeds. `tau` is calibrated on a
+all Parts are 10 seeds as of 2026-07-07 (Part 1 regenerated with archived logs). `tau` is calibrated on a
 **held-out batch everywhere as of 2026-07-07** (`bakeoff.py` and
 `ablation_reachp3` always did; `calib_tau` in the rule/reachp/reachp2 ablations
 was fixed to held-out — archived seed-0 logs predate the fix; a held-out rerun
@@ -59,9 +59,12 @@ and different `recon` definitions (see the warning in Part 4).
 ## Part 1 — Depth-only proof (`experiments/depth_sanity.py`, `models/recurrent.py`)
 
 In-context functional-graph reachability (whole graph given each query). The
-recurrent-depth reasoner's **halting tracks difficulty**: accuracy rises with
-test-time depth (r=1 → 64%, r≥6 → 100%) and **`corr(K, steps-to-converge) ≈
-+0.92`**.
+recurrent-depth reasoner's **halting tracks difficulty** — regenerated at
+**10 seeds** (2026-07-07; logs archived): accuracy rises with test-time depth
+(r=1: 15.7±0.4% → r=12: 100.0%), per-K accuracy at full depth is 100% for
+every K ≤ 12, steps-to-converge equals K **exactly** (per-K mean conv-step = K
+on every seed), and **`corr(K, steps-to-converge) = +0.997±0.001`** (per-seed
+range [+0.997, +0.998]).
 
 **What the halting signal actually is here**: steps-to-prediction-stability
 (first step after which the argmax prediction never changes), computed in
@@ -69,8 +72,10 @@ hindsight over the full rollout — i.e. *convergence to the sink fixed-point*,
 not a surprise/reconstruction scalar, and not an online rule. It isolates the
 **depth knob** and shows the task has the right difficulty structure; it does
 not yet test surprise-driven halting. Memory is redundant here (graph fully in
-context). *Provenance caveat: single seed; the run log was not archived —
-regeneration is queued.*
+context). *Provenance: the original single-seed numbers (corr +0.92; r=1 → 64%,
+r≥6 → 100%) do not reproduce under the current config (n=28, sinks=2, T=12) and
+their log was never archived — they are **superseded** by the archived 10-seed
+rerun above (`results/depth_sanity_s{0..9}.log`, 3000 steps, defaults).*
 
 ## Part 2 — Memory-only proof (`datasets/rule.py`, `models/memory.py`, `experiments/ablation_rule.py`)
 

@@ -98,12 +98,12 @@ See `docs/proposal.md`.
 > consistent but near-trivial as stated; it earns content only if the halt signal
 > is shown to *predict the write magnitude* (untested; the MQAR probe, §7).
 
-Evidence chain (Part 1 single-seed; Parts 2/4/5 are 10 seeds; `tau` held-out
+Evidence chain (all Parts 10 seeds as of 2026-07-07; `tau` held-out
 everywhere as of 2026-07-07):
 
 | # | claim | task | key number | status |
 |---|---|---|---|---|
-| 1 | depth tracks difficulty | in-context reachability | `corr(K, halt)=+0.92`, 100% (convergence halting, hindsight; single seed, log not archived) | ✅ |
+| 1 | depth tracks difficulty | in-context reachability | `corr(K, halt)=+0.997±0.001`, per-K 100%·conv-step=K (convergence halting, hindsight; **10 seeds**, logs archived 2026-07-07 — supersedes the unarchived single-seed +0.92) | ✅ |
 | 2 | memory buys accuracy + compute | hidden-rule (partial obs) | persist 5→81% (10 seeds: 50.5±0.4% overall); both 2.4 vs 8.0 latent steps; `corr(ans, entropy)=−0.96` | ✅ |
 | 3 | joint, *entropy* halt (historical) | partial-obs reachability | amortization holds w/o halting; entropy halting costs accuracy | 🟡 superseded by Part 4 |
 | 4a | joint halting **accuracy-preserving** w/ convergence signal | partial-obs reachability (strong learner), **10-seed** bake-off | conv/dstate −0.0pp vs persist 72.0±0.6%; entropy/recon −5.6pp | ✅ |
