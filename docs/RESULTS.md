@@ -302,6 +302,15 @@ kcap=4 eval). No-halt ceiling **71.9±0.5%**; slack = 1.0pp.
   accuracy peak, rather than halting confident-wrong-early) — same conclusion:
   **entropy/recon are the wrong halting observables; convergence is right.**
   Caveat: weak multi-hop base learner (persist 41.6±0.9%) — mechanism-scale.
+- **Standard-config anchor** (2026-07-07, single-hop, vocab **8192**, m=4, Q=16
+  ≈ zoology's KV upper end, 10 seeds): the **transfer holds at standard scale**
+  — conv's eval tau-sweep admits a within-1pp-of-ceiling operating point at
+  **2.24±0.16/6 steps on 10/10 seeds** (curve read; the inherited argmax-tau
+  headline barely halts — the Part-4a tau-rule artifact reproduced at 8192).
+  Ceiling 51.7±0.6% (weaker base learner at standard vocab); single-hop remains
+  non-discriminating (all four signals +0.0pp), as at vocab 64. Multi-hop was
+  *not* rerun at 8192 (optional residual). Full details + honest caveats:
+  `docs/mqar_design.md` §"Standard-config anchor".
 
 ## Negative baseline (retained)
 
