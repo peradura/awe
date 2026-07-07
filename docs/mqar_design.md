@@ -174,6 +174,39 @@ cost-free, compute-saving depth controller (single-hop) *and* is the discriminat
 winner over entropy/recon when the task has real depth structure (multi-hop) — the
 reachp finding generalizes to an external associative-recall task.
 
+## Standard-config anchor (backfill design — 2026-07-07, run before executing)
+
+**Purpose** (paper Limitations bullet): mini-MQAR uses vocab 64; the standard zoology
+config is vocab 8192. ONE anchor run at standard *scale* so a reviewer can't attribute
+the discrimination/transfer to the toy vocab (entropy over 64 classes ≠ entropy over
+8192; decodability recon is O(vocab)-dependent).
+
+**Design decisions (no tuning, by rule):**
+- Config: vocab **n=8192** (standard), **m=4, Q=16** → ≤64 revealed pairs = the
+  standard train config's KV upper end (seq 256 / 4–64 pairs). T=6, p_ans=0.7,
+  d=256 (inside zoology's 64–512 model-dim sweep), steps/lr/lam_aux = `ablation_mqar`
+  defaults **unchanged** — the anchor inherits the single-hop pilot's hyperparameters
+  verbatim; if the base learner is weaker at 8192, that is reported, not tuned away.
+- Arms/protocol: identical to the single-hop run (entropy/conv/dstate/recon(state-mism.),
+  held-out tau, decomposition, depth-vs-load) — the claim under test is *transfer of
+  the halting result to standard scale*, not a leaderboard entry.
+- Positioning vs published baselines: cite the zoology table (attention ≈100%;
+  sub-quadratic models degrade with KV load) as *context*; our model is a
+  delta-rule-family memory, so the relevant published anchors are the DeltaNet-class
+  rows. We report our per-query accuracy at matched vocab/load, not a leaderboard claim
+  (streaming interface, not their harness).
+- 10 seeds, GPU (user-approved 2026-07-07; GPUs idle).
+- Implementation note: `datasets/mqar.py::make_batch` is O(n) per example (full dict +
+  unseen scan) — prohibitive at n=8192. Anchor path uses a distribution-identical lazy
+  generator (lazy dict for D — i.i.d. values on first touch; rejection sampling for
+  unseen probes — uniform over unseen since |revealed| ≤ 64 ≪ 8192). Guarded to the
+  anchor config so archived mini-MQAR runs stay byte-reproducible.
+- Expected outcomes and their readings: (i) conv still matches ceiling at < budget →
+  limitation resolved; (ii) base learner too weak at 8192 → report honestly,
+  limitation stays but sharpened ("mechanism-scale at standard vocab"); (iii) signals
+  reorder → real finding, must go in the paper.
+- Artifacts: `results/mqar8k_seed{0..9}.json`, log per seed, aggregate in LOG.md.
+
 ## References (verified 2026-07-06)
 
 Zoology 2312.04927 · Based 2402.18668 · H3 2212.14052 · DeltaNet 2406.06484 ·

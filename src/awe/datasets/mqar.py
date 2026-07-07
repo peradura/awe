@@ -25,6 +25,9 @@ class MqarConfig:
     Q = 12            # stream length
     T = 6             # latent retrieval steps budget
     p_ans = 0.7       # fraction of probes drawn from already-revealed keys
+    lazy = False      # large-vocab generator path (standard-config anchor); the
+    #                   distribution is identical, only the rng call sequence differs
+    #                   — keep False for reproducing the archived mini-MQAR runs
 
 
 def make_batch(batch_size, cfg, rng, device="cpu"):
@@ -44,23 +47,39 @@ def make_batch(batch_size, cfg, rng, device="cpu"):
     traj = torch.empty(batch_size, Q, T, dtype=torch.long)
     K = torch.empty(batch_size, Q, dtype=torch.long)
     ans = torch.zeros(batch_size, Q, dtype=torch.long)
+    lazy = getattr(cfg, "lazy", False)
     for b in range(batch_size):
-        D = [rng.randrange(n) for _ in range(n)]           # dictionary key -> value
+        if lazy:
+            # large-vocab path (standard-config anchor): identical distribution —
+            # D[x] i.i.d. uniform assigned on first touch; unseen probe by rejection
+            # sampling (uniform over unseen since |revealed| << n). O(Q*m), not O(n).
+            D = {}
+            def dval(x):
+                if x not in D:
+                    D[x] = rng.randrange(n)
+                return D[x]
+        else:
+            Dl = [rng.randrange(n) for _ in range(n)]        # dictionary key -> value
+            dval = Dl.__getitem__
         revealed = set()
         for q in range(Q):
             ks = [rng.randrange(n) for _ in range(m)]       # reveal m pairs
             for j, x in enumerate(ks):
-                keys[b, q, j] = x; vals[b, q, j] = D[x]
+                keys[b, q, j] = x; vals[b, q, j] = dval(x)
             revealed |= set(ks)                              # written before retrieval
             # probe: answerable (revealed) with prob p_ans, else an unseen key
             if revealed and rng.random() < cfg.p_ans:
                 pk = rng.choice(tuple(revealed))
+            elif lazy:
+                pk = rng.randrange(n)                        # rejection sampling
+                while pk in revealed:
+                    pk = rng.randrange(n)
             else:
                 unseen = [k for k in range(n) if k not in revealed]
                 pk = rng.choice(unseen) if unseen else rng.choice(tuple(revealed))
             probe[b, q] = pk
-            target[b, q] = D[pk]
-            traj[b, q, :] = D[pk]                            # single-hop: hold the value
+            target[b, q] = dval(pk)
+            traj[b, q, :] = dval(pk)                         # single-hop: hold the value
             K[b, q] = len(revealed)
             ans[b, q] = 1 if pk in revealed else 0
     return dict(

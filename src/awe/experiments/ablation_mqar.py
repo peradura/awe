@@ -63,6 +63,10 @@ def train(model, cfg, opt, device, steps, batch, rng, lam_aux, log_every=400):
 def run_seed(args, device):
     torch.manual_seed(args.seed); rng = random.Random(args.seed)
     cfg = Cfg()
+    if args.n:                       # standard-config anchor overrides (mqar_design.md)
+        cfg.n, cfg.lazy = args.n, (args.n > 256)
+    if args.m: cfg.m = args.m
+    if args.Q: cfg.Q = args.Q
     model = RuleReasoner(cfg.n, d=args.d).to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=0.01)
     print(f"seed={args.seed} device={device} | params="
@@ -121,7 +125,7 @@ def run_seed(args, device):
             dvl[str(k)] = hs_dstate[mk].float().mean().item()
     out["depth_vs_load"] = dvl
 
-    path = f"{args.out}/mqar_seed{args.seed}.json"
+    path = f"{args.out}/mqar{args.tag}_seed{args.seed}.json"
     with open(path, "w") as f:
         json.dump(out, f, indent=1)
     print(f"saved -> {path}")
@@ -129,7 +133,7 @@ def run_seed(args, device):
 
 
 def aggregate(args):
-    files = sorted(glob.glob(f"{args.out}/mqar_seed*.json"))
+    files = sorted(glob.glob(f"{args.out}/mqar{args.tag}_seed*.json"))
     runs = [json.load(open(f)) for f in files]
     if not runs:
         print("no per-seed JSONs found"); return
@@ -156,7 +160,7 @@ def aggregate(args):
     plt.xlabel("avg steps used"); plt.ylabel("MQAR accuracy (%)")
     plt.title(f"MQAR halting bake-off (seed {r0['seed']}; aggregate in log)")
     plt.legend(fontsize=8); plt.grid(alpha=.3); plt.tight_layout()
-    fig = f"{args.out}/mqar_bakeoff.png"
+    fig = f"{args.out}/mqar{args.tag}_bakeoff.png"
     plt.savefig(fig, dpi=130); print(f"saved figure -> {fig}")
 
 
@@ -171,6 +175,10 @@ def main():
     ap.add_argument("--ncal", type=int, default=500)
     ap.add_argument("--neval", type=int, default=500)
     ap.add_argument("--out", type=str, default="results")
+    ap.add_argument("--n", type=int, default=0, help="vocab override (anchor: 8192)")
+    ap.add_argument("--m", type=int, default=0, help="KV pairs/query override")
+    ap.add_argument("--Q", type=int, default=0, help="stream length override")
+    ap.add_argument("--tag", type=str, default="", help="artifact suffix, e.g. 8k")
     ap.add_argument("--aggregate", action="store_true")
     args = ap.parse_args()
     if args.aggregate:
