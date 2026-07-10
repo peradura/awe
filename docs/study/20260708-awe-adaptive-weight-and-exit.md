@@ -5,7 +5,6 @@
 >> 원본 repository : `~/research/awe`
 >
 >(README · PROJECT.md · docs/RESULTS.md · docs/intuition.md · docs/exp_logs/LOG.md)
->[7/7 세미나 발제 기록](../seminar/07월07일-추론시점컴퓨트-적응가중치와조기종료.md) — 이 스터디 문서는 그 발제 **이후** 정리한 후속 자료.
 
 ---
 
