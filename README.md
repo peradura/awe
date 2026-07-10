@@ -114,6 +114,7 @@ python -m awe.experiments.ablation_reachp2 --steps 8000   # sharpened joint (cur
 Uses GPU if available, else CPU (models are ~0.2–0.9M params — CPU is fine).
 
 **Intuition (Korean, start here if new) → [`docs/intuition.md`](docs/intuition.md).
+Study deep-dive (Korean) → [`docs/study/20260708-awe-adaptive-weight-and-exit.md`](docs/study/20260708-awe-adaptive-weight-and-exit.md).
 Full overview → [`PROJECT.md`](PROJECT.md). Results → [`docs/RESULTS.md`](docs/RESULTS.md).
 Experiment log → [`docs/exp_logs/LOG.md`](docs/exp_logs/LOG.md).**
 
@@ -170,7 +171,7 @@ src/awe/
 ├── models/     recurrent.py · ttt.py · amort.py · memory.py            (reasoners)
 └── experiments/ depth_sanity · ablation_{ttt,amort,rule,reachp,reachp2,reachp3,mqar,mqar_hop} · bakeoff.py
 scripts/  sweep.sh · aggregate.py · gpu_watch_run.sh  (multi-seed + polite shared-GPU runner)
-docs/   intuition.md (KR explainer) · proposal.md · RESULTS.md · mqar_design.md · REVIEW.md · RUNBOOK.md · exp_logs/LOG.md
+docs/   intuition.md (KR explainer) · proposal.md · RESULTS.md · mqar_design.md · REVIEW.md · RUNBOOK.md · exp_logs/LOG.md · study/ (KR study deep-dive)
 results/  figures + run logs
 ```
 See [`PROJECT.md`](PROJECT.md) for the full narrative and file roles.
