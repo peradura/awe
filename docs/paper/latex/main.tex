@@ -70,8 +70,9 @@ the computation settled enough to stop?} and \emph{when is the input surprising
 enough to write?}
 
 A seductive unification suggests the two questions share an answer. Titans
-gates its writes by a \textbf{surprise} scalar --- the memory's self-supervised
-reconstruction error --- so that novel content is written and familiar content
+gates its writes by \textbf{surprise} --- the gradient of the memory's
+self-supervised reconstruction loss, smoothed by a momentum term and a
+forgetting gate --- so that novel content is written and familiar content
 is not~\citep{behrouz2025titans}. Recurrent-depth models halt on
 \textbf{convergence} of the latent state~\citep{geiping2025recurrent}. Read
 side by side, these \emph{look like} two readings of one underlying quantity:
@@ -140,11 +141,14 @@ that also adapts weights.
 
 \paragraph{Weight adaptation.} TTT~\citep{sun2020ttt} and TTT
 layers~\citep{sun2024tttlayers} update parameters on the test stream;
-Titans~\citep{behrouz2025titans} writes to a fast-weight memory gated by a
-\textbf{surprise} (reconstruction-error) scalar; \citet{ponderttt2026} gates
-test-time-training compute with a binary ponder decision. The write signal in all of these is a reconstruction miss
---- exactly the signal our bake-off finds to be the \emph{wrong} halting
-observable.
+Titans~\citep{behrouz2025titans} writes to a fast-weight memory gated by
+\textbf{surprise} --- the gradient of an $\ell_2$ associative-recall loss with
+momentum and a forgetting gate; with momentum disabled, its linear-memory case
+recovers Gated DeltaNet, the delta-rule family our memory belongs to.
+\citet{ponderttt2026} gates test-time-training compute with a binary ponder
+decision. None of these has an adaptive-depth axis: the write signal in all of
+them is a reconstruction miss --- exactly the signal our bake-off finds to be
+the \emph{wrong} halting observable.
 
 \paragraph{Depth--memory interaction.} \citet{utmemory2026} combines
 train-time capacity with an ACT router; we differ on both counts --- our

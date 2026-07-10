@@ -47,8 +47,9 @@ control signal: *when has the computation settled enough to stop?* and *when is 
 input surprising enough to write?*
 
 A seductive unification suggests the two questions share an answer. Titans gates its
-writes by a **surprise** scalar — the memory's self-supervised reconstruction error —
-so that novel content is written and familiar content is not. Recurrent-depth models
+writes by **surprise** — the gradient of the memory's self-supervised reconstruction
+loss, smoothed by a momentum term and a forgetting gate — so that novel content is
+written and familiar content is not. Recurrent-depth models
 halt on **convergence** of the latent state. Read side by side, these *look like* two
 readings of one underlying quantity: high surprise means "keep thinking and keep
 writing," low surprise means "halt and stop writing." The intuition even has a tidy
@@ -103,10 +104,13 @@ synthetic reasoning. These works learn or hand-design a halting rule but do not 
 candidate signals against each other on a task that also adapts weights.
 
 **Weight adaptation.** TTT (1909.13231) and TTT layers (2407.04620) update parameters
-on the test stream; Titans (2501.00663) writes to a fast-weight memory gated by a
-**surprise** (reconstruction-error) scalar; Sim (2601.00894, "When to Ponder")
-gates TTT compute with a binary ponder decision. The write signal in all of these is a reconstruction miss — exactly the signal
-our bake-off finds to be the *wrong* halting observable.
+on the test stream; Titans (2501.00663) writes to a fast-weight memory gated by
+**surprise** — the gradient of an ℓ2 associative-recall loss with momentum and a
+forgetting gate; with momentum disabled, its linear-memory case recovers Gated
+DeltaNet, the delta-rule family our memory belongs to. Sim (2601.00894, "When to
+Ponder") gates TTT compute with a binary ponder decision. None of these has an
+adaptive-depth axis: the write signal in all of them is a reconstruction miss —
+exactly the signal our bake-off finds to be the *wrong* halting observable.
 
 **Depth–memory interaction.** Sapunov (2604.21999, "Universal Transformers Need
 Memory") combines train-time capacity with
